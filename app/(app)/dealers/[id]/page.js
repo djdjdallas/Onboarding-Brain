@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { humanizeFlag } from "@/lib/eligibility"
 import { PagesTab } from "@/components/pages-tab"
+import { RunAuditButton } from "@/components/run-audit-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -90,12 +91,15 @@ export default async function DealerDetailPage({ params }) {
 
         <TabsContent value="findings" className="mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Audit findings</CardTitle>
-              <CardDescription>
-                Broken URLs, title mismatches, and discovered pages appear here
-                once the audit system lands (Step 12).
-              </CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div className="space-y-1.5">
+                <CardTitle className="text-base">Audit findings</CardTitle>
+                <CardDescription>
+                  Run an audit to check this dealer&apos;s LIVE page URLs against
+                  the live site and sitemap. The findings list lands in Step 12.
+                </CardDescription>
+              </div>
+              <RunAuditButton dealerId={id} />
             </CardHeader>
           </Card>
         </TabsContent>
