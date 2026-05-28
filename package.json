@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:templates": "node --env-file=.env.local scripts/seed-page-templates.mjs",
+    "seed:templates:dry": "node scripts/seed-page-templates.mjs --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
