@@ -251,6 +251,20 @@ function report(templates) {
   for (const t of modelOnly) console.log(`  - ${t.page_type}`)
   console.log("\nPMA (requires_pma) templates:")
   for (const t of pma) console.log(`  - ${t.page_type}`)
+
+  // Diagnostic: the generic bucket is where un-collapsed rows hide. If a
+  // model/PMA page slips through the patterns it lands here, inflating the
+  // count. Listed by family so it's easy to spot strays.
+  console.log("\nGeneric (kept as-is) page types, by family:")
+  const genByFamily = {}
+  for (const t of generic) {
+    const f = t.page_family ?? "(none)"
+    ;(genByFamily[f] ??= []).push(t.page_type)
+  }
+  for (const [f, types] of Object.entries(genByFamily).sort()) {
+    console.log(`  ${f}:`)
+    for (const pt of types.sort()) console.log(`    - ${pt}`)
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -293,6 +307,14 @@ async function main() {
         "Run with:  node --env-file=.env.local scripts/seed-page-templates.mjs\n"
     )
     process.exit(1)
+  }
+
+  // supabase-js spins up a Realtime client on construction, which needs a
+  // global WebSocket. Node < 22 doesn't have one — polyfill with `ws`. (The
+  // seed only uses the REST/Postgres API, so Realtime is never actually used.)
+  if (typeof globalThis.WebSocket === "undefined") {
+    const { default: ws } = await import("ws")
+    globalThis.WebSocket = ws
   }
 
   const { createClient } = await import("@supabase/supabase-js")
