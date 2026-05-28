@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
 import { humanizeFlag } from "@/lib/eligibility"
+import { RegeneratePagesButton } from "@/components/regenerate-pages-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -145,12 +146,15 @@ export default async function DealerDetailPage({ params }) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pages ({totalPages})</CardTitle>
-          <CardDescription>
-            Generated from the page templates. The filterable table + CSV export
-            arrives in Step 8.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="text-base">Pages ({totalPages})</CardTitle>
+            <CardDescription>
+              Generated from the page templates. The filterable table + CSV
+              export arrives in Step 8.
+            </CardDescription>
+          </div>
+          <RegeneratePagesButton dealerId={id} hasPages={totalPages > 0} />
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {totalPages === 0 ? (
