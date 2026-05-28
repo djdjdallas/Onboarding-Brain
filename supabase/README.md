@@ -39,11 +39,14 @@ In the Supabase dashboard:
    - **Site URL**: `http://localhost:3000` for dev (set to your Vercel URL in prod).
    - **Redirect URLs**: add `http://localhost:3000/auth/confirm` (and the prod equivalent).
 
-2. **Authentication → Email Templates → Magic Link**
-   Replace the link with the token_hash flow our `/auth/confirm` route expects:
+2. **Authentication → Email Templates → Magic Link** *(optional)*
+   The default template (`{{ .ConfirmationURL }}`) sends a PKCE `?code=...`
+   link, which `/auth/confirm` handles via `exchangeCodeForSession`. You can
+   leave it as-is. If you'd rather use the token_hash flow, set the URL to:
    ```
    {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email
    ```
+   `/auth/confirm` supports both.
 
 3. **Authentication → Providers / Sign In → "Allow new users to sign up"**
    Turn this **OFF** — the app is invite-only. Our login action also passes
