@@ -1,9 +1,10 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import Papa from "papaparse"
+import { useMemo, useState, useTransition } from "react"
+import { toast } from "sonner"
 import { Download } from "lucide-react"
 
+import { exportPagesCsv } from "@/app/(app)/dealers/[id]/actions"
 import { RegeneratePagesButton } from "@/components/regenerate-pages-button"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -66,6 +67,7 @@ export function PagesTab({ dealerId, dealerName, pages }) {
     pma_city: ALL,
   })
   const [selected, setSelected] = useState(() => new Set())
+  const [exporting, startExport] = useTransition()
 
   const options = useMemo(
     () => ({
@@ -121,31 +123,29 @@ export function PagesTab({ dealerId, dealerName, pages }) {
     })
   }
 
-  // Basic CSV (selected rows, or all filtered if none selected). Step 9 reshapes
-  // this into the Jira-import column format.
+  // Jira-format CSV, built server-side (keeps long descriptions off the client).
+  // Exports the selected rows, or all filtered rows if none are selected.
   function exportCsv() {
-    const rows = selected.size
+    const ids = (selected.size
       ? filtered.filter((p) => selected.has(p.id))
       : filtered
-    const csv = Papa.unparse(
-      rows.map((p) => ({
-        "Page Type": p.page_type,
-        Model: p.model ?? "",
-        PMA: p.pma_city ?? "",
-        Status: p.status,
-        "Next Step": p.next_step ?? "",
-        Priority: p.priority_score ?? "",
-        "Due Date": p.due_date ?? "",
-        URL: p.url ?? "",
-      }))
-    )
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${(dealerName ?? "dealer").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-pages.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    ).map((p) => p.id)
+
+    startExport(async () => {
+      const res = await exportPagesCsv(dealerId, ids)
+      if (res?.error) {
+        toast.error(res.error)
+        return
+      }
+      const blob = new Blob([res.csv], { type: "text/csv;charset=utf-8;" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = res.filename
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success(`Exported ${ids.length} page${ids.length === 1 ? "" : "s"}.`)
+    })
   }
 
   const hasFilters = Object.values(filters).some((v) => v !== ALL)
@@ -165,9 +165,14 @@ export function PagesTab({ dealerId, dealerName, pages }) {
         ) : null}
         <div className="ml-auto flex items-center gap-2">
           <RegeneratePagesButton dealerId={dealerId} hasPages={pages.length > 0} />
-          <Button size="sm" variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={exportCsv}
+            disabled={filtered.length === 0 || exporting}
+          >
             <Download />
-            Export CSV
+            {exporting ? "Exporting…" : "Export CSV"}
           </Button>
         </div>
       </div>

@@ -1,9 +1,11 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import Papa from "papaparse"
 
 import { createClient } from "@/lib/supabase/server"
 import { generatePages } from "@/lib/page-generator"
+import { buildJiraRows } from "@/lib/jira-export"
 import { KIA_MODELS } from "@/lib/eligibility"
 
 /**
@@ -70,4 +72,53 @@ export async function regenerateDealerPages(dealerId) {
   revalidatePath(`/dealers/${dealerId}`)
   revalidatePath("/")
   return { count: pageRows.length }
+}
+
+/**
+ * Builds a Jira-import CSV for the given pages (or all of a dealer's pages when
+ * `pageIds` is empty). Returns { csv, filename } or { error }. The client turns
+ * the string into a download — we keep the long description text server-side.
+ */
+export async function exportPagesCsv(dealerId, pageIds = []) {
+  const supabase = await createClient()
+
+  const { data: dealer } = await supabase
+    .from("dealers")
+    .select("name, account_managers(jira_user_string)")
+    .eq("id", dealerId)
+    .single()
+  if (!dealer) return { error: "Dealer not found." }
+
+  let query = supabase
+    .from("pages")
+    .select(
+      "id, model, pma_city, status, url, due_date, priority_score, " +
+        "page_templates(page_type, cadence, description_template)"
+    )
+    .eq("dealer_id", dealerId)
+    .order("priority_score", { ascending: false, nullsFirst: false })
+
+  if (pageIds.length) query = query.in("id", pageIds)
+
+  const { data: pages, error } = await query
+  if (error) return { error: `Could not load pages: ${error.message}` }
+  if (!pages?.length) return { error: "No pages to export." }
+
+  const rows = buildJiraRows(
+    dealer.name,
+    dealer.account_managers?.jira_user_string ?? null,
+    pages.map((p) => ({
+      page_type: p.page_templates?.page_type,
+      model: p.model,
+      pma_city: p.pma_city,
+      status: p.status,
+      due_date: p.due_date,
+      cadence: p.page_templates?.cadence,
+      url: p.url,
+      description: p.page_templates?.description_template,
+    }))
+  )
+
+  const filename = `${dealer.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-jira.csv`
+  return { csv: Papa.unparse(rows), filename }
 }
