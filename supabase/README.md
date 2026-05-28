@@ -31,6 +31,27 @@ Every table has Row Level Security **enabled** with a single policy granting
 authenticated users full access. The service-role key bypasses RLS for the
 seed script and cron audit job.
 
+## 4. Auth configuration (required for magic-link login)
+
+In the Supabase dashboard:
+
+1. **Authentication → URL Configuration**
+   - **Site URL**: `http://localhost:3000` for dev (set to your Vercel URL in prod).
+   - **Redirect URLs**: add `http://localhost:3000/auth/confirm` (and the prod equivalent).
+
+2. **Authentication → Email Templates → Magic Link**
+   Replace the link with the token_hash flow our `/auth/confirm` route expects:
+   ```
+   {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email
+   ```
+
+3. **Authentication → Providers / Sign In → "Allow new users to sign up"**
+   Turn this **OFF** — the app is invite-only. Our login action also passes
+   `shouldCreateUser: false`.
+
+4. **Invite your AMs**: Authentication → Users → **Invite user** (or add by email).
+   Only invited users can request a magic link.
+
 ## Notes
 - `pmas.mod_score` and `priority_models.mod_score` are **generated columns**:
   `1 - ((priority_order - 1) * 0.111)`. You never insert them — set
