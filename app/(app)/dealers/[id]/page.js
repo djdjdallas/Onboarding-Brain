@@ -35,6 +35,17 @@ export default async function DealerDetailPage({ params }) {
 
   if (!dealer) notFound()
 
+  // Page-plan summary (full filterable table is Step 8).
+  const { data: pageStatuses } = await supabase
+    .from("pages")
+    .select("status, next_step")
+    .eq("dealer_id", id)
+  const statusCounts = {}
+  for (const p of pageStatuses ?? []) {
+    statusCounts[p.status] = (statusCounts[p.status] ?? 0) + 1
+  }
+  const totalPages = pageStatuses?.length ?? 0
+
   const pmas = (dealer.pmas ?? []).sort((a, b) => a.priority_order - b.priority_order)
   const models = (dealer.priority_models ?? []).sort(
     (a, b) => a.priority_order - b.priority_order
@@ -135,12 +146,27 @@ export default async function DealerDetailPage({ params }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Pages</CardTitle>
+          <CardTitle className="text-base">Pages ({totalPages})</CardTitle>
           <CardDescription>
-            Page generation arrives in Step 7 — the filterable table + CSV
-            export in Step 8.
+            Generated from the page templates. The filterable table + CSV export
+            arrives in Step 8.
           </CardDescription>
         </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {totalPages === 0 ? (
+            <span className="text-sm text-muted-foreground">
+              No pages generated.
+            </span>
+          ) : (
+            Object.entries(statusCounts)
+              .sort()
+              .map(([status, count]) => (
+                <Badge key={status} variant="outline">
+                  {status}: {count}
+                </Badge>
+              ))
+          )}
+        </CardContent>
       </Card>
     </div>
   )

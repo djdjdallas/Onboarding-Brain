@@ -5,14 +5,16 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 import { dealerWizardSchema } from "@/lib/validation/dealer"
+import { generatePages } from "@/lib/page-generator"
+import { KIA_MODELS } from "@/lib/eligibility"
 
 /**
- * Creates a dealer and its PMAs, priority models, and eligibility rows from the
- * onboarding wizard. Returns { error } on failure; redirects to the new dealer
- * on success. (Page generation from the templates happens in Step 7.)
+ * Creates a dealer + its PMAs, priority models, and eligibility rows from the
+ * onboarding wizard, then generates the full page plan from page_templates.
+ * Returns { error } on failure; redirects to the new dealer on success.
  *
  * mod_score is a generated column — we only send priority_order (the array
- * index + 1), and the database computes the score.
+ * index + 1) and read the computed score back for page scoring.
  */
 export async function createDealer(input) {
   const parsed = dealerWizardSchema.safeParse(input)
@@ -60,19 +62,59 @@ export async function createDealer(input) {
     })
   )
 
-  const results = await Promise.all([
-    supabase.from("pmas").insert(pmas),
-    supabase.from("priority_models").insert(models),
+  // Insert children. PMAs/models are read back with their generated mod_score
+  // for page scoring.
+  const [pmaRes, modelRes, eligRes] = await Promise.all([
+    supabase.from("pmas").insert(pmas).select("city, mod_score, priority_order"),
+    supabase
+      .from("priority_models")
+      .insert(models)
+      .select("model, mod_score, priority_order"),
     supabase.from("eligibility").insert(eligibility),
   ])
-  const childErr = results.find((r) => r.error)?.error
+  const childErr = [pmaRes, modelRes, eligRes].find((r) => r.error)?.error
   if (childErr) {
     await supabase.from("dealers").delete().eq("id", dealer.id)
     return { error: `Could not save dealer details: ${childErr.message}` }
   }
 
-  // TODO (Step 7): generate pages from page_templates here, seeding LIVE status
-  // for any data.urls that match a generated page.
+  // Generate the page plan from the OEM's templates.
+  const { data: templates, error: tplErr } = await supabase
+    .from("page_templates")
+    .select(
+      "id, page_type, page_family, base_priority, requires_model, requires_pma, gate_rules"
+    )
+    .eq("oem", data.oem || "KIA")
+  if (tplErr || !templates?.length) {
+    await supabase.from("dealers").delete().eq("id", dealer.id)
+    return {
+      error: tplErr
+        ? `Could not load page templates: ${tplErr.message}`
+        : "No page templates found — run the seed script first.",
+    }
+  }
+
+  const byOrder = (a, b) => a.priority_order - b.priority_order
+  const pageRows = generatePages({
+    templates,
+    pmas: pmaRes.data
+      .sort(byOrder)
+      .map((p) => ({ city: p.city, mod_score: Number(p.mod_score) })),
+    models: modelRes.data
+      .sort(byOrder)
+      .map((m) => ({ model: m.model, mod_score: Number(m.mod_score) })),
+    flags: data.eligibility,
+    tier: data.package_tier,
+    urls: data.urls,
+    knownModels: KIA_MODELS,
+    campaignStart: new Date(),
+  }).map((row) => ({ ...row, dealer_id: dealer.id }))
+
+  const { error: pagesErr } = await supabase.from("pages").insert(pageRows)
+  if (pagesErr) {
+    await supabase.from("dealers").delete().eq("id", dealer.id)
+    return { error: `Could not generate pages: ${pagesErr.message}` }
+  }
 
   revalidatePath("/")
   redirect(`/dealers/${dealer.id}`)
