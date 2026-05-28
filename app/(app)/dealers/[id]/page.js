@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { humanizeFlag } from "@/lib/eligibility"
 import { PagesTab } from "@/components/pages-tab"
 import { RunAuditButton } from "@/components/run-audit-button"
+import { FindingsList } from "@/components/findings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -55,6 +56,14 @@ export default async function DealerDetailPage({ params }) {
     due_date: p.due_date,
   }))
 
+  const { data: findings } = await supabase
+    .from("audit_findings_detail")
+    .select("id, finding_type, details, status, created_at, page_url, page_type")
+    .eq("dealer_id", id)
+    .order("created_at", { ascending: false })
+
+  const openFindings = (findings ?? []).filter((f) => f.status === "open").length
+
   const pmas = (dealer.pmas ?? []).sort((a, b) => a.priority_order - b.priority_order)
   const models = (dealer.priority_models ?? []).sort(
     (a, b) => a.priority_order - b.priority_order
@@ -81,7 +90,9 @@ export default async function DealerDetailPage({ params }) {
       <Tabs defaultValue="pages">
         <TabsList>
           <TabsTrigger value="pages">Pages</TabsTrigger>
-          <TabsTrigger value="findings">Findings</TabsTrigger>
+          <TabsTrigger value="findings">
+            Findings{openFindings ? ` (${openFindings})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -95,12 +106,15 @@ export default async function DealerDetailPage({ params }) {
               <div className="space-y-1.5">
                 <CardTitle className="text-base">Audit findings</CardTitle>
                 <CardDescription>
-                  Run an audit to check this dealer&apos;s LIVE page URLs against
-                  the live site and sitemap. The findings list lands in Step 12.
+                  Broken URLs, sitemap gaps, title mismatches, and pages found in
+                  the sitemap but not the plan.
                 </CardDescription>
               </div>
               <RunAuditButton dealerId={id} />
             </CardHeader>
+            <CardContent>
+              <FindingsList findings={findings ?? []} />
+            </CardContent>
           </Card>
         </TabsContent>
 
