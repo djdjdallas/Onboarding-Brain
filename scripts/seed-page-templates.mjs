@@ -40,7 +40,10 @@ import Papa from "papaparse"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, "..")
-const CSV_PATH = resolve(ROOT, "seed/main_page_library.csv")
+const csvArg = process.argv.find((a) => a.startsWith("--csv="))
+const CSV_PATH = csvArg
+  ? resolve(csvArg.slice("--csv=".length))
+  : resolve(ROOT, "seed/main_page_library.csv")
 const DRY_RUN = process.argv.includes("--dry-run")
 const OEM = "KIA"
 
@@ -57,9 +60,14 @@ const MODELS = [
   "K5",
 ]
 const MODEL_ALT = MODELS.join("|")
+// "<Model> in PMA <City>" -> per-model PMA-local templates.
 const RE_MODEL_PMA = new RegExp(`^(${MODEL_ALT})\\s+in\\s+PMA\\s+.+$`, "i")
-const RE_DEALER_NEAR_PMA = /^Dealer\s+Near\s+PMA\s+.+$/i
+// "<Topic> Near PMA <City>" -> per-topic, city stripped (incl. "Dealer Near PMA").
+const RE_NEAR_PMA = /^(.+?)\s+Near\s+PMA\s+.+$/i
+// "<RealModel> <Suffix>" (e.g. "K5 SRP") -> generic "Model <Suffix>".
 const RE_MODEL_PREFIX = new RegExp(`^(${MODEL_ALT})\\s+(.+)$`, "i")
+// Literal "Model <Suffix>" placeholder rows the sheet already genericized.
+const RE_MODEL_LITERAL = /^Model\s+(.+)$/i
 
 // ---------------------------------------------------------------------------
 // Eligibility / Gate parsing
@@ -185,11 +193,15 @@ function buildTemplates(rows) {
       continue
     }
 
-    // Rule 2: Dealer Near PMA -> one template
-    if (RE_DEALER_NEAR_PMA.test(pageType)) {
+    // Rule 2: "<Topic> Near PMA <City>" -> one template per topic, city stripped.
+    // Covers "Dealer Near PMA" plus service pages (Collision Center, Oil Change,
+    // Service Center, New/Used Cars, Sell/Trade Car, Service & Parts Specials).
+    const mNear = pageType.match(RE_NEAR_PMA)
+    if (mNear) {
+      const topic = mNear[1].trim()
       addOnce(
-        "dealer-near-pma",
-        baseOf(row, "Dealer Near PMA", {
+        `near-pma:${topic.toLowerCase()}`,
+        baseOf(row, `${topic} Near PMA`, {
           requires_model: false,
           requires_pma: true,
         })
@@ -197,16 +209,23 @@ function buildTemplates(rows) {
       continue
     }
 
-    // Rule 3: Single-model (non-PMA) -> generic per suffix
+    // Rule 3: Single-model (non-PMA), e.g. "K5 SRP" -> generic "Model <Suffix>".
     const mPrefix = pageType.match(RE_MODEL_PREFIX)
     if (mPrefix) {
-      const suffix = mPrefix[2].trim()
+      const finalType = `Model ${mPrefix[2].trim()}`
       addOnce(
-        `model-page:${suffix.toLowerCase()}`,
-        baseOf(row, `Model ${suffix}`, {
-          requires_model: true,
-          requires_pma: false,
-        })
+        `model:${finalType.toLowerCase()}`,
+        baseOf(row, finalType, { requires_model: true, requires_pma: false })
+      )
+      continue
+    }
+
+    // Rule 3b: Literal "Model <Suffix>" placeholder rows (Showroom, Trim/Feature,
+    // Lease/Finance, Year Launch) -> kept as-is, expanded per model.
+    if (RE_MODEL_LITERAL.test(pageType)) {
+      addOnce(
+        `model:${pageType.toLowerCase()}`,
+        baseOf(row, pageType, { requires_model: true, requires_pma: false })
       )
       continue
     }
@@ -235,11 +254,9 @@ function report(templates) {
     byFamily[f] = (byFamily[f] ?? 0) + 1
   }
 
-  console.log(`\nTotal templates: ${templates.length}  (target 40-60)`)
-  console.log(
-    `  requires_model && !requires_pma : ${modelOnly.length}  (target ~9)`
-  )
-  console.log(`  requires_pma                    : ${pma.length}  (target ~9-12)`)
+  console.log(`\nTotal templates: ${templates.length}`)
+  console.log(`  requires_model && !requires_pma : ${modelOnly.length}`)
+  console.log(`  requires_pma                    : ${pma.length}`)
   console.log(`  generic (both false)            : ${generic.length}`)
 
   console.log("\nBy page_family:")
