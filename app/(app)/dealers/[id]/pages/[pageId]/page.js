@@ -44,6 +44,14 @@ export default async function PageDetailPage({ params }) {
     .eq("page_id", pageId)
     .order("created_at")
 
+  const { data: metric } = await supabase
+    .from("page_metrics")
+    .select("captured_at, clicks, impressions, ctr, avg_position")
+    .eq("page_id", pageId)
+    .order("captured_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   // Priority breakdown inputs.
   const [{ data: pma }, { data: model }] = await Promise.all([
     page.pma_city
@@ -168,6 +176,41 @@ export default async function PageDetailPage({ params }) {
                 ) : null}
               </div>
             </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Performance</CardTitle>
+              <CardDescription>
+                {metric
+                  ? `Search Console · as of ${metric.captured_at}`
+                  : "Import a GSC CSV on the Pages tab to see metrics."}
+              </CardDescription>
+            </CardHeader>
+            {metric ? (
+              <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                <div>
+                  <p className="text-muted-foreground">Clicks</p>
+                  <p className="tabular-nums font-medium">{metric.clicks ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Impressions</p>
+                  <p className="tabular-nums font-medium">{metric.impressions ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">CTR</p>
+                  <p className="tabular-nums font-medium">
+                    {metric.ctr != null ? `${Number(metric.ctr).toFixed(1)}%` : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Avg position</p>
+                  <p className="tabular-nums font-medium">
+                    {metric.avg_position != null ? Number(metric.avg_position).toFixed(1) : "—"}
+                  </p>
+                </div>
+              </CardContent>
+            ) : null}
           </Card>
 
           <SubtasksCard dealerId={id} pageId={pageId} subtasks={subtasks ?? []} />

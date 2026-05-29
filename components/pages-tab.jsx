@@ -13,6 +13,7 @@ import {
   bulkApplyLabel,
 } from "@/app/(app)/dealers/[id]/page-actions"
 import { RegeneratePagesButton } from "@/components/regenerate-pages-button"
+import { ImportMetricsButton } from "@/components/import-metrics-button"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -215,6 +216,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
         ) : null}
         <div className="ml-auto flex items-center gap-2">
           <RegeneratePagesButton dealerId={dealerId} hasPages={rows.length > 0} />
+          <ImportMetricsButton dealerId={dealerId} />
           <Button size="sm" variant="outline" onClick={exportCsv} disabled={filtered.length === 0 || exporting}>
             <Download />
             {exporting ? "Exporting…" : "Export CSV"}
