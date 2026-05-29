@@ -31,6 +31,7 @@ export default async function DealerDetailPage({ params }) {
     .from("pages")
     .select(
       "id, model, pma_city, status, next_step, url, priority_score, due_date, " +
+        "manual_priority_adjustment, manually_scheduled_due_date, notes, labels, " +
         "page_templates(page_type, page_family)"
     )
     .eq("dealer_id", id)
@@ -47,6 +48,10 @@ export default async function DealerDetailPage({ params }) {
     url: p.url,
     priority_score: p.priority_score,
     due_date: p.due_date,
+    manual_priority_adjustment: p.manual_priority_adjustment ?? 0,
+    manually_scheduled_due_date: p.manually_scheduled_due_date,
+    notes: p.notes,
+    labels: p.labels ?? [],
   }))
 
   const { data: findings } = await supabase
