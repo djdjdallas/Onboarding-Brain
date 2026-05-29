@@ -67,3 +67,35 @@ the foreign key blocks the wipe (clear `pages` first if you must re-seed).
 
 The page generator (Step 7) parses the model back out of `"<Model> PMA Local"`
 and expands `requires_model` templates across each dealer's own priority models.
+
+---
+
+# V2.0 reference-data seeds
+
+Run after migration `0004_v2_admin.sql`. All use `--dry-run` (no DB needed) and
+upsert by unique key (safe to re-run).
+
+| Script | npm | Source |
+|---|---|---|
+| `seed-eligibility-flag-types.mjs` | `seed:eligibility-types` | hardcoded (19 flags, grouped) |
+| `seed-cadence-rules.mjs` | `seed:cadence` | built-in defaults; optional `seed/cadence_rules.csv` |
+| `seed-package-tiers.mjs` | `seed:packages` | built-in defaults; optional `seed/package_assumptions.csv` |
+
+Seed them all in dependency order:
+```bash
+npm run seed:all          # eligibility types -> cadence -> packages
+```
+
+## Optional CSV overrides
+`cadence` and `packages` seed sensible defaults out of the box (the tier
+capacities match the page generator). To use your real sheet values instead,
+export and the scripts will override matching fields by (normalized) header name:
+- `Cadence_Rules` tab → `seed/cadence_rules.csv` (needs a cadence column + any of:
+  review months, when to use, examples, due-date behavior, override, risks/notes)
+- `Package_Assumptions` tab → `seed/package_assumptions.csv` (needs a tier/name
+  column + pages-per-month, optimization capacity, etc.)
+
+If your headers don't match and the override doesn't take, run with `--dry-run`
+to see what loaded, and adjust the header hints in the script (or share the
+headers). You can also just edit these in `/admin/cadence-rules` and
+`/admin/package-tiers` once the admin UI is built.
