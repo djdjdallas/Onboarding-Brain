@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { PageDetailForm } from "@/components/page-detail-form"
 import { GenerateJiraDescription } from "@/components/generate-jira-description"
 import { MarkReviewedButton } from "@/components/mark-reviewed-button"
+import { SubtasksCard } from "@/components/subtasks-card"
 import { HistoryTab } from "@/components/dealer-settings/history-tab"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,6 +35,12 @@ export default async function PageDetailPage({ params }) {
   const tpl = page.page_templates ?? {}
 
   const { data: dealer } = await supabase.from("dealers").select("name").eq("id", id).single()
+
+  const { data: subtasks } = await supabase
+    .from("subtasks")
+    .select("id, summary, status, owner")
+    .eq("page_id", pageId)
+    .order("created_at")
 
   // Priority breakdown inputs.
   const [{ data: pma }, { data: model }] = await Promise.all([
@@ -155,6 +162,8 @@ export default async function PageDetailPage({ params }) {
               />
             </CardContent>
           </Card>
+
+          <SubtasksCard dealerId={id} pageId={pageId} subtasks={subtasks ?? []} />
 
           <Card>
             <CardHeader>

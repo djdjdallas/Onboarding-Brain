@@ -6,6 +6,25 @@ import { createClient } from "@/lib/supabase/server"
 import { recordAudit, getActorId } from "@/lib/audit"
 import { recomputeScores } from "@/lib/dealer-recalc"
 import { markReviewed } from "@/lib/scheduler"
+import { generateSubtasksForPage } from "@/lib/subtasks"
+
+/** Manually (re)generate subtasks for a page from subtask_types. */
+export async function generatePageSubtasks(dealerId, pageId) {
+  const supabase = await createClient()
+  const n = await generateSubtasksForPage(supabase, pageId)
+  revalidatePath(`/dealers/${dealerId}/pages/${pageId}`)
+  return { ok: true, created: n }
+}
+
+/** Update a subtask's status. */
+export async function setSubtaskStatus(dealerId, pageId, subtaskId, status) {
+  if (!["open", "in_progress", "done"].includes(status)) return { error: "Invalid status." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("subtasks").update({ status }).eq("id", subtaskId)
+  if (error) return { error: error.message }
+  revalidatePath(`/dealers/${dealerId}/pages/${pageId}`)
+  return { ok: true }
+}
 
 /** Mark a page reviewed today; cadence sets its next due date. Audited. */
 export async function markPageReviewed(dealerId, pageId) {
@@ -98,6 +117,11 @@ export async function updatePageFields(pageId, patch) {
     actorId: await getActorId(supabase),
     changes,
   })
+
+  // When a page first moves to Optimize, generate its subtasks.
+  if (clean.next_step === "Optimize" && page.next_step !== "Optimize") {
+    await generateSubtasksForPage(supabase, pageId)
+  }
 
   revalidatePath(`/dealers/${page.dealer_id}`)
   return { ok: true, priority_score: nextScore }

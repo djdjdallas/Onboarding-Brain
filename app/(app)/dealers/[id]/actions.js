@@ -107,10 +107,17 @@ export async function exportPagesCsv(dealerId, pageIds = []) {
   if (error) return { error: `Could not load pages: ${error.message}` }
   if (!pages?.length) return { error: "No pages to export." }
 
+  // Generated subtasks for the exported pages (linked to parent via summary).
+  const { data: subtasks } = await supabase
+    .from("subtasks")
+    .select("page_id, summary, status, due_date")
+    .in("page_id", pages.map((p) => p.id))
+
   const rows = buildJiraRows(
     dealer.name,
     dealer.account_managers?.jira_user_string ?? null,
     pages.map((p) => ({
+      id: p.id,
       page_type: p.page_templates?.page_type,
       model: p.model,
       pma_city: p.pma_city,
@@ -119,7 +126,8 @@ export async function exportPagesCsv(dealerId, pageIds = []) {
       cadence: p.page_templates?.cadence,
       url: p.url,
       description: p.page_templates?.description_template,
-    }))
+    })),
+    subtasks ?? []
   )
 
   const filename = `${dealer.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-jira.csv`
