@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Building2,
   AlertTriangle,
+  CalendarClock,
   Settings,
   Shield,
   LogOut,
@@ -28,6 +29,7 @@ const NAV = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Dealers", href: "/dealers", icon: Building2 },
   { title: "Audit Findings", href: "/findings", icon: AlertTriangle },
+  { title: "Workload", href: "/workload", icon: CalendarClock },
   { title: "Settings", href: "/settings", icon: Settings },
 ]
 
