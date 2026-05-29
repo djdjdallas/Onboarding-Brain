@@ -2,8 +2,11 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
+import { humanizeFlag } from "@/lib/eligibility"
+import { pageLabel } from "@/lib/jira-export"
 import { PagesTab } from "@/components/pages-tab"
 import { DiscoveredTab } from "@/components/discovered-tab"
+import { FactSheet } from "@/components/fact-sheet"
 import { RunAuditButton } from "@/components/run-audit-button"
 import { FindingsList } from "@/components/findings-list"
 import { Button } from "@/components/ui/button"
@@ -22,7 +25,7 @@ export default async function DealerDetailPage({ params }) {
 
   const { data: dealer } = await supabase
     .from("dealers")
-    .select("id, name, oem, package_tier, account_managers(name)")
+    .select("id, name, oem, package_tier, website, address, account_managers(name)")
     .eq("id", id)
     .single()
 
@@ -74,6 +77,35 @@ export default async function DealerDetailPage({ params }) {
     ])
   const openDiscovered = (discovered ?? []).filter((d) => d.status === "open").length
 
+  // Fact sheet data.
+  const [{ data: fsPmas }, { data: fsModels }, { data: fsElig }] = await Promise.all([
+    supabase.from("pmas").select("city, priority_order").eq("dealer_id", id).order("priority_order"),
+    supabase.from("priority_models").select("model, priority_order, tracked").eq("dealer_id", id).order("priority_order"),
+    supabase
+      .from("eligibility")
+      .select("flag_key, flag_value, eligibility_flag_types(label)")
+      .eq("dealer_id", id)
+      .eq("flag_value", true),
+  ])
+  const urlsByFamily = {}
+  for (const p of pages) {
+    if (!p.url) continue
+    const fam = p.page_family ?? "Other"
+    ;(urlsByFamily[fam] ??= []).push({ label: pageLabel(p), url: p.url })
+  }
+  const factSheet = {
+    name: dealer.name,
+    oem: dealer.oem,
+    packageTier: dealer.package_tier,
+    amName: dealer.account_managers?.name ?? null,
+    website: dealer.website,
+    address: dealer.address,
+    pmas: fsPmas ?? [],
+    models: (fsModels ?? []).map((m) => ({ model: m.model, tracked: m.tracked !== false })),
+    flags: (fsElig ?? []).map((e) => e.eligibility_flag_types?.label ?? humanizeFlag(e.flag_key)).sort(),
+    urlsByFamily,
+  }
+
   const openFindings = (findings ?? []).filter((f) => f.status === "open").length
 
   return (
@@ -107,6 +139,7 @@ export default async function DealerDetailPage({ params }) {
           <TabsTrigger value="findings">
             Findings{openFindings ? ` (${openFindings})` : ""}
           </TabsTrigger>
+          <TabsTrigger value="fact-sheet">Fact Sheet</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pages" className="mt-4">
@@ -139,6 +172,10 @@ export default async function DealerDetailPage({ params }) {
               <FindingsList findings={findings ?? []} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="fact-sheet" className="mt-4">
+          <FactSheet factSheet={factSheet} />
         </TabsContent>
       </Tabs>
     </div>
