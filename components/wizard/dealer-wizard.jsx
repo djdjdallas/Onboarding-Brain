@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { dealerWizardSchema, STEP_FIELDS } from "@/lib/validation/dealer"
 import { humanizeFlag } from "@/lib/eligibility"
 import { createDealer } from "@/app/(app)/dealers/new/actions"
+import { cn } from "@/lib/utils"
 import { SortableList } from "./sortable-list"
 
 import { Button } from "@/components/ui/button"
@@ -48,7 +49,52 @@ function FieldError({ name }) {
     formState: { errors },
   } = useFormContext()
   const msg = name.split(".").reduce((o, k) => o?.[k], errors)?.message
-  return msg ? <p className="text-sm text-destructive">{msg}</p> : null
+  return msg ? <p className="text-tiny text-destructive">{msg}</p> : null
+}
+
+// Progress dots: 6px circles, accent for done/current, border for upcoming.
+function Stepper({ step }) {
+  return (
+    <div className="flex items-center gap-1.5" aria-hidden="true">
+      {STEPS.map((s, i) => (
+        <span
+          key={s.title}
+          className={cn(
+            "size-1.5 rounded-full transition-colors",
+            i <= step ? "bg-primary" : "bg-border"
+          )}
+        />
+      ))}
+    </div>
+  )
+}
+
+// Last-step recap of what the wizard will create.
+function WizardSummary({ values, urlCount }) {
+  const elig = Object.values(values.eligibility ?? {}).filter(Boolean).length
+  const rows = [
+    ["Dealer", values.name || "—"],
+    ["OEM / Package", `${values.oem ?? "—"} · ${values.package_tier ?? "—"}`],
+    ["PMAs", String((values.pmas ?? []).length)],
+    ["Priority models", String((values.models ?? []).length)],
+    ["Eligibility flags", String(elig)],
+    ["Known URLs", String(urlCount)],
+  ]
+  return (
+    <div className="rounded-md border bg-muted/40 p-4">
+      <p className="mb-2 text-tiny font-medium uppercase tracking-wide text-muted-foreground">
+        On create
+      </p>
+      <dl className="grid gap-1 text-small">
+        {rows.map(([k, v]) => (
+          <div key={k} className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">{k}</dt>
+            <dd className="text-right font-medium">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -259,7 +305,7 @@ function EligibilityStep({ flags }) {
       {flags.map((flag) => (
         <label
           key={flag}
-          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+          className="flex items-center gap-2 rounded-md border px-3 py-2 text-small hover:bg-accent"
         >
           <Checkbox
             checked={!!eligibility?.[flag]}
@@ -290,7 +336,7 @@ function UrlsStep({ urlsText, setUrlsText }) {
         onChange={(e) => setUrlsText(e.target.value)}
         rows={10}
         placeholder={"One URL per line, e.g.\nhttps://www.kiaofeasthartford.com/\nhttps://www.kiaofeasthartford.com/service/"}
-        className="min-h-40 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="min-h-40 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-small outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
       />
       <p className="text-xs text-muted-foreground">
         {count} URL{count === 1 ? "" : "s"}. These seed page accounting in the
@@ -356,11 +402,14 @@ export function DealerWizard({ accountManagers, flags, oems, modelsByOem }) {
   return (
     <FormProvider {...methods}>
       <Card className="max-w-2xl">
-        <CardHeader>
-          <CardDescription>
-            Step {step + 1} of {STEPS.length}
-          </CardDescription>
-          <CardTitle>{STEPS[step].title}</CardTitle>
+        <CardHeader className="gap-2">
+          <div className="flex items-center justify-between">
+            <Stepper step={step} />
+            <span className="text-tiny text-muted-foreground">
+              Step {step + 1} of {STEPS.length}
+            </span>
+          </div>
+          <CardTitle className="text-h1">{STEPS[step].title}</CardTitle>
           <CardDescription>{STEPS[step].description}</CardDescription>
         </CardHeader>
 
@@ -374,10 +423,17 @@ export function DealerWizard({ accountManagers, flags, oems, modelsByOem }) {
               <UrlsStep urlsText={urlsText} setUrlsText={setUrlsText} />
             )}
 
+            {isLast ? (
+              <WizardSummary
+                values={methods.watch()}
+                urlCount={urlsText.split("\n").map((u) => u.trim()).filter(Boolean).length}
+              />
+            ) : null}
+
             <div className="flex items-center justify-between border-t pt-4">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setStep((s) => Math.max(s - 1, 0))}
                 disabled={step === 0 || submitting}
               >
@@ -389,7 +445,7 @@ export function DealerWizard({ accountManagers, flags, oems, modelsByOem }) {
                 </Button>
               ) : (
                 <Button type="button" onClick={next}>
-                  Next
+                  Continue
                 </Button>
               )}
             </div>

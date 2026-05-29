@@ -30,7 +30,7 @@ function SortableRow({ id, index, label, onRemove, accessory }) {
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 ${
-        isDragging ? "opacity-60 shadow-sm" : ""
+        isDragging ? "border-primary opacity-80 shadow-sm" : ""
       }`}
     >
       <button
@@ -45,7 +45,7 @@ function SortableRow({ id, index, label, onRemove, accessory }) {
       <Badge variant="secondary" className="tabular-nums">
         {index + 1}
       </Badge>
-      <span className="flex-1 text-sm">{label}</span>
+      <span className="flex-1 text-small">{label}</span>
       {accessory}
       <Button
         type="button"
