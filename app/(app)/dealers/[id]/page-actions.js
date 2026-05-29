@@ -96,6 +96,12 @@ export async function bulkBacklogPages(dealerId, pageIds) {
     .in("id", pageIds)
   if (error) return { error: error.message }
   await recomputeScores(supabase, dealerId)
+  await recordAudit(supabase, {
+    entityType: "dealer",
+    entityId: dealerId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "bulk: backlog", old: null, new: `${pageIds.length} pages` }],
+  })
   revalidatePath(`/dealers/${dealerId}`)
   return { ok: true }
 }
@@ -111,6 +117,12 @@ export async function bulkApplyLabel(dealerId, pageIds, label) {
     if (labels.includes(tag)) continue
     await supabase.from("pages").update({ labels: [...labels, tag] }).eq("id", p.id)
   }
+  await recordAudit(supabase, {
+    entityType: "dealer",
+    entityId: dealerId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "bulk: label", old: null, new: `"${tag}" → ${pageIds.length} pages` }],
+  })
   revalidatePath(`/dealers/${dealerId}`)
   return { ok: true }
 }

@@ -3,7 +3,17 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { getActorId } from "@/lib/audit"
+import { getActorId, recordAudit } from "@/lib/audit"
+
+/** Audit a discovered-page review at the dealer level (so it shows in History). */
+async function auditDiscovered(supabase, dealerId, url, status) {
+  await recordAudit(supabase, {
+    entityType: "discovered_page",
+    entityId: dealerId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "status", old: null, new: `${status}: ${url}` }],
+  })
+}
 
 function priorityScore({ base, modelMod, pmaMod }) {
   let s = Number(base) || 0
@@ -70,6 +80,7 @@ export async function acceptDiscoveredPage(dealerId, discoveredId, { templateId,
     .eq("id", discoveredId)
   if (error) return { error: error.message }
 
+  await auditDiscovered(supabase, dealerId, dp.url, "accepted")
   revalidatePath(`/dealers/${dealerId}`)
   return { ok: true }
 }
@@ -83,19 +94,23 @@ async function review(supabase, discoveredId, patch) {
 
 export async function dismissDiscoveredPage(dealerId, discoveredId) {
   const supabase = await createClient()
+  const { data: dp } = await supabase.from("discovered_pages").select("url").eq("id", discoveredId).single()
   const { error } = await review(supabase, discoveredId, { status: "dismissed" })
   if (error) return { error: error.message }
+  await auditDiscovered(supabase, dealerId, dp?.url ?? "", "dismissed")
   revalidatePath(`/dealers/${dealerId}`)
   return { ok: true }
 }
 
 export async function flagDiscoveredPage(dealerId, discoveredId, notes) {
   const supabase = await createClient()
+  const { data: dp } = await supabase.from("discovered_pages").select("url").eq("id", discoveredId).single()
   const { error } = await review(supabase, discoveredId, {
     status: "flagged",
     notes: String(notes || "").trim() || null,
   })
   if (error) return { error: error.message }
+  await auditDiscovered(supabase, dealerId, dp?.url ?? "", "flagged")
   revalidatePath(`/dealers/${dealerId}`)
   return { ok: true }
 }

@@ -73,8 +73,11 @@ export async function savePmas(dealerId, cities, primaryCity) {
   const supabase = await createClient()
   const { data: existing } = await supabase
     .from("pmas")
-    .select("id, city")
+    .select("id, city, priority_order")
     .eq("dealer_id", dealerId)
+  const oldOrder = [...(existing ?? [])]
+    .sort((a, b) => a.priority_order - b.priority_order)
+    .map((p) => p.city)
   const byCity = new Map((existing ?? []).map((p) => [p.city.toLowerCase(), p]))
 
   // Remove cities no longer present (cascades their keyword_targets).
@@ -102,6 +105,12 @@ export async function savePmas(dealerId, cities, primaryCity) {
   await supabase.from("dealers").update({ primary_pma_id: primary?.id ?? null }).eq("id", dealerId)
 
   await reconcileStructure(supabase, dealerId)
+  await recordAudit(supabase, {
+    entityType: "pma",
+    entityId: dealerId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "order", old: oldOrder, new: list }],
+  })
   revalidateDealer(dealerId)
   return { ok: true }
 }
@@ -117,8 +126,11 @@ export async function saveModels(dealerId, models) {
   const supabase = await createClient()
   const { data: existing } = await supabase
     .from("priority_models")
-    .select("id, model")
+    .select("id, model, priority_order")
     .eq("dealer_id", dealerId)
+  const oldOrder = [...(existing ?? [])]
+    .sort((a, b) => a.priority_order - b.priority_order)
+    .map((m) => m.model)
   const byModel = new Map((existing ?? []).map((m) => [m.model.toLowerCase(), m]))
 
   const keepLower = new Set(list.map((m) => m.model.toLowerCase()))
@@ -144,6 +156,12 @@ export async function saveModels(dealerId, models) {
   }
 
   await reconcileStructure(supabase, dealerId)
+  await recordAudit(supabase, {
+    entityType: "priority_model",
+    entityId: dealerId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "order", old: oldOrder, new: list.map((m) => m.model) }],
+  })
   revalidateDealer(dealerId)
   return { ok: true }
 }
@@ -158,7 +176,28 @@ export async function saveEligibility(dealerId, newFlagMap) {
   const supabase = await createClient()
   const { data: types } = await supabase.from("eligibility_flag_types").select("id, key")
   const flagTypeIdByKey = Object.fromEntries((types ?? []).map((t) => [t.key, t.id]))
+
+  // Capture old values for the audit diff.
+  const { data: oldRows } = await supabase
+    .from("eligibility")
+    .select("flag_key, flag_value")
+    .eq("dealer_id", dealerId)
+  const oldFlags = Object.fromEntries((oldRows ?? []).map((r) => [r.flag_key, r.flag_value]))
+
   const result = await applyEligibility(supabase, dealerId, newFlagMap, flagTypeIdByKey)
+
+  const changes = Object.entries(newFlagMap)
+    .filter(([key, val]) => !!oldFlags[key] !== !!val)
+    .map(([key, val]) => ({ field: key, old: !!oldFlags[key], new: !!val }))
+  if (changes.length) {
+    await recordAudit(supabase, {
+      entityType: "eligibility",
+      entityId: dealerId,
+      actorId: await getActorId(supabase),
+      changes,
+    })
+  }
+
   revalidateDealer(dealerId)
   return { ok: true, ...result }
 }
@@ -177,6 +216,15 @@ export async function saveKeywordTargets(dealerId, cells) {
     .from("keyword_targets")
     .upsert(rows, { onConflict: "dealer_id,keyword_id,pma_id" })
   if (error) return { error: error.message }
+
+  const targetedCount = rows.filter((r) => r.is_targeted).length
+  await recordAudit(supabase, {
+    entityType: "keyword_target",
+    entityId: dealerId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "targets", old: null, new: `${targetedCount} active` }],
+  })
+
   revalidatePath(`/dealers/${dealerId}/settings`)
   return { ok: true }
 }
