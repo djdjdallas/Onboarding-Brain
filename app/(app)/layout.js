@@ -1,8 +1,11 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
+import { HelpCircle } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/server"
 import { isAdmin } from "@/lib/auth/roles"
 import { AppSidebar } from "@/components/app-sidebar"
+import { Button } from "@/components/ui/button"
 import {
   SidebarProvider,
   SidebarInset,
@@ -33,6 +36,11 @@ export default async function AppLayout({ children }) {
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
+          <Button asChild variant="ghost" size="icon-sm" className="ml-auto" title="How it works">
+            <Link href="/docs/methodology" target="_blank">
+              <HelpCircle />
+            </Link>
+          </Button>
         </header>
         <div className="flex-1 p-6">{children}</div>
       </SidebarInset>

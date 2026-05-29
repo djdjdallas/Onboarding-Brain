@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   CalendarClock,
   CalendarDays,
+  BookOpen,
   Settings,
   Shield,
   LogOut,
@@ -32,6 +33,7 @@ const NAV = [
   { title: "Audit Findings", href: "/findings", icon: AlertTriangle },
   { title: "Workload", href: "/workload", icon: CalendarClock },
   { title: "Calendar", href: "/calendar", icon: CalendarDays },
+  { title: "Docs", href: "/docs/methodology", icon: BookOpen },
   { title: "Settings", href: "/settings", icon: Settings },
 ]
 
