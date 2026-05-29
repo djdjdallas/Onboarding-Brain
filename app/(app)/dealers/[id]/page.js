@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { humanizeFlag } from "@/lib/eligibility"
 import { pageLabel } from "@/lib/jira-export"
+import { isJiraConfigured } from "@/lib/jira"
 import { PagesTab } from "@/components/pages-tab"
 import { DiscoveredTab } from "@/components/discovered-tab"
 import { FactSheet } from "@/components/fact-sheet"
@@ -143,7 +144,7 @@ export default async function DealerDetailPage({ params }) {
         </TabsList>
 
         <TabsContent value="pages" className="mt-4">
-          <PagesTab dealerId={id} dealerName={dealer.name} pages={pages} />
+          <PagesTab dealerId={id} dealerName={dealer.name} pages={pages} jiraConfigured={isJiraConfigured()} />
         </TabsContent>
 
         <TabsContent value="discovered" className="mt-4">

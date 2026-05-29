@@ -4,9 +4,9 @@ import { useMemo, useState, useTransition, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Download } from "lucide-react"
+import { Download, ExternalLink } from "lucide-react"
 
-import { exportPagesCsv } from "@/app/(app)/dealers/[id]/actions"
+import { exportPagesCsv, pushPagesToJira } from "@/app/(app)/dealers/[id]/actions"
 import {
   updatePageFields,
   bulkBacklogPages,
@@ -61,9 +61,10 @@ function FilterSelect({ label, value, onChange, options }) {
   )
 }
 
-export function PagesTab({ dealerId, dealerName, pages }) {
+export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }) {
   const router = useRouter()
   const [rows, setRows] = useState(pages)
+  const [pushing, startPush] = useTransition()
   const [filters, setFilters] = useState({
     page_family: ALL,
     status: ALL,
@@ -177,6 +178,20 @@ export function PagesTab({ dealerId, dealerName, pages }) {
     })
   }
 
+  function pushJira() {
+    const ids = (selected.size ? filtered.filter((p) => selected.has(p.id)) : filtered).map((p) => p.id)
+    startPush(async () => {
+      const res = await pushPagesToJira(dealerId, ids)
+      if (res?.error) return toast.error(res.error)
+      toast.success(
+        `Pushed ${res.created} to Jira` +
+          (res.skipped ? ` · ${res.skipped} already linked` : "") +
+          (res.failed ? ` · ${res.failed} failed` : "")
+      )
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -194,6 +209,12 @@ export function PagesTab({ dealerId, dealerName, pages }) {
             <Download />
             {exporting ? "Exporting…" : "Export CSV"}
           </Button>
+          {jiraConfigured ? (
+            <Button size="sm" variant="outline" onClick={pushJira} disabled={filtered.length === 0 || pushing}>
+              <ExternalLink />
+              {pushing ? "Pushing…" : "Push to Jira"}
+            </Button>
+          ) : null}
         </div>
       </div>
 

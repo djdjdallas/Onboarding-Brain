@@ -6,7 +6,8 @@ import Papa from "papaparse"
 import { createClient } from "@/lib/supabase/server"
 import { generatePages } from "@/lib/page-generator"
 import { loadTierCapacity } from "@/lib/scheduler"
-import { buildJiraRows } from "@/lib/jira-export"
+import { buildJiraRows, pageLabel } from "@/lib/jira-export"
+import { isJiraConfigured, jiraConfig, createIssue } from "@/lib/jira"
 import { KIA_MODELS } from "@/lib/eligibility"
 
 /**
@@ -132,4 +133,82 @@ export async function exportPagesCsv(dealerId, pageIds = []) {
 
   const filename = `${dealer.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-jira.csv`
   return { csv: Papa.unparse(rows), filename }
+}
+
+/**
+ * Push pages (and their subtasks) to Jira as issues, storing the returned keys.
+ * Skips pages already pushed. Credential-gated. Returns { created, failed,
+ * skipped } or { error }.
+ */
+export async function pushPagesToJira(dealerId, pageIds = []) {
+  if (!isJiraConfigured()) {
+    return { error: "Jira isn't configured. Set JIRA_* env vars (see Settings)." }
+  }
+  const supabase = await createClient()
+  const cfg = jiraConfig()
+
+  const { data: dealer } = await supabase.from("dealers").select("name").eq("id", dealerId).single()
+  if (!dealer) return { error: "Dealer not found." }
+
+  let query = supabase
+    .from("pages")
+    .select(
+      "id, model, pma_city, status, due_date, labels, jira_issue_key, page_templates(page_type, description_template)"
+    )
+    .eq("dealer_id", dealerId)
+  if (pageIds.length) query = query.in("id", pageIds)
+  const { data: pages, error } = await query
+  if (error) return { error: error.message }
+
+  const toPush = (pages ?? []).filter((p) => !p.jira_issue_key)
+  let created = 0
+  let failed = 0
+
+  for (const p of toPush) {
+    const label = pageLabel({ page_type: p.page_templates?.page_type, model: p.model, pma_city: p.pma_city })
+    const summary = `Web Page: ${dealer.name} - ${label}`
+    const facts = [p.model && `Model: ${p.model}`, p.pma_city && `PMA: ${p.pma_city}`]
+      .filter(Boolean)
+      .join("\n")
+    const description = `${p.page_templates?.description_template ?? ""}${facts ? `\n\n---\n${facts}` : ""}`.trim()
+
+    try {
+      const { key } = await createIssue({
+        summary,
+        description,
+        issueType: cfg.pageIssueType,
+        labels: p.labels,
+        dueDate: p.due_date,
+      })
+      await supabase
+        .from("pages")
+        .update({ jira_issue_key: key, jira_synced_at: new Date().toISOString() })
+        .eq("id", p.id)
+      created++
+
+      // Push this page's not-yet-pushed subtasks as Jira sub-tasks.
+      const { data: subs } = await supabase
+        .from("subtasks")
+        .select("id, summary")
+        .eq("page_id", p.id)
+        .is("jira_issue_key", null)
+      for (const s of subs ?? []) {
+        try {
+          const r = await createIssue({
+            summary: s.summary,
+            issueType: cfg.subtaskIssueType,
+            parentKey: key,
+          })
+          await supabase.from("subtasks").update({ jira_issue_key: r.key }).eq("id", s.id)
+        } catch {
+          // Sub-task failure shouldn't fail the page.
+        }
+      }
+    } catch {
+      failed++
+    }
+  }
+
+  revalidatePath(`/dealers/${dealerId}`)
+  return { ok: true, created, failed, skipped: (pages?.length ?? 0) - toPush.length }
 }
