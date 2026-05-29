@@ -2,11 +2,9 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
-import { humanizeFlag } from "@/lib/eligibility"
 import { PagesTab } from "@/components/pages-tab"
 import { RunAuditButton } from "@/components/run-audit-button"
 import { FindingsList } from "@/components/findings-list"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -23,14 +21,7 @@ export default async function DealerDetailPage({ params }) {
 
   const { data: dealer } = await supabase
     .from("dealers")
-    .select(
-      "id, name, oem, package_tier, website, address, account_managers(name), " +
-        // Disambiguate: dealers now has two FKs to pmas (pmas.dealer_id and
-        // dealers.primary_pma_id), so name the relationship explicitly.
-        "pmas!pmas_dealer_id_fkey(city, priority_order, mod_score), " +
-        "priority_models(model, priority_order, mod_score), " +
-        "eligibility(flag_key, flag_value)"
-    )
+    .select("id, name, oem, package_tier, account_managers(name)")
     .eq("id", id)
     .single()
 
@@ -66,12 +57,6 @@ export default async function DealerDetailPage({ params }) {
 
   const openFindings = (findings ?? []).filter((f) => f.status === "open").length
 
-  const pmas = (dealer.pmas ?? []).sort((a, b) => a.priority_order - b.priority_order)
-  const models = (dealer.priority_models ?? []).sort(
-    (a, b) => a.priority_order - b.priority_order
-  )
-  const activeFlags = (dealer.eligibility ?? []).filter((e) => e.flag_value)
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -84,9 +69,14 @@ export default async function DealerDetailPage({ params }) {
             {pages.length} pages
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/">Back to dashboard</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/dealers/${id}/settings`}>Settings</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/">Back to dashboard</Link>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="pages">
@@ -95,7 +85,6 @@ export default async function DealerDetailPage({ params }) {
           <TabsTrigger value="findings">
             Findings{openFindings ? ` (${openFindings})` : ""}
           </TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pages" className="mt-4">
@@ -116,83 +105,6 @@ export default async function DealerDetailPage({ params }) {
             </CardHeader>
             <CardContent>
               <FindingsList findings={findings ?? []} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="mt-4 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-1 text-sm">
-              <div>
-                <span className="text-muted-foreground">Website: </span>
-                {dealer.website ?? "—"}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Address: </span>
-                {dealer.address ?? "—"}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">PMAs ({pmas.length})</CardTitle>
-                <CardDescription>Priority order · mod score</CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-1.5 text-sm">
-                {pmas.map((p) => (
-                  <div key={p.priority_order} className="flex justify-between">
-                    <span>
-                      {p.priority_order}. {p.city}
-                    </span>
-                    <span className="tabular-nums text-muted-foreground">
-                      {Number(p.mod_score).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Models ({models.length})</CardTitle>
-                <CardDescription>Priority order · mod score</CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-1.5 text-sm">
-                {models.map((m) => (
-                  <div key={m.priority_order} className="flex justify-between">
-                    <span>
-                      {m.priority_order}. {m.model}
-                    </span>
-                    <span className="tabular-nums text-muted-foreground">
-                      {Number(m.mod_score).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                Eligibility ({activeFlags.length} active)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {activeFlags.length ? (
-                activeFlags.map((e) => (
-                  <Badge key={e.flag_key} variant="secondary">
-                    {humanizeFlag(e.flag_key)}
-                  </Badge>
-                ))
-              ) : (
-                <span className="text-sm text-muted-foreground">None enabled.</span>
-              )}
             </CardContent>
           </Card>
         </TabsContent>

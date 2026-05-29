@@ -21,7 +21,7 @@ import { GripVertical, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-function SortableRow({ id, index, label, onRemove }) {
+function SortableRow({ id, index, label, onRemove, accessory }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id })
 
@@ -46,6 +46,7 @@ function SortableRow({ id, index, label, onRemove }) {
         {index + 1}
       </Badge>
       <span className="flex-1 text-sm">{label}</span>
+      {accessory}
       <Button
         type="button"
         variant="ghost"
@@ -64,7 +65,7 @@ function SortableRow({ id, index, label, onRemove }) {
  * onReorder(fromIndex, toIndex) and onRemove(index). Priority is simply the
  * row order (index 0 = top priority), which maps to priority_order on submit.
  */
-export function SortableList({ items, onReorder, onRemove }) {
+export function SortableList({ items, onReorder, onRemove, renderAccessory }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -104,6 +105,7 @@ export function SortableList({ items, onReorder, onRemove }) {
               index={index}
               label={item.label}
               onRemove={onRemove}
+              accessory={renderAccessory ? renderAccessory(item) : null}
             />
           ))}
         </div>
