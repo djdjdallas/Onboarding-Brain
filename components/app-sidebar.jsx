@@ -7,6 +7,7 @@ import {
   Building2,
   AlertTriangle,
   Settings,
+  Shield,
   LogOut,
 } from "lucide-react"
 
@@ -30,13 +31,17 @@ const NAV = [
   { title: "Settings", href: "/settings", icon: Settings },
 ]
 
-export function AppSidebar({ userEmail }) {
+export function AppSidebar({ userEmail, isAdmin = false }) {
   const pathname = usePathname()
 
   function isActive(href) {
     if (href === "/") return pathname === "/"
     return pathname === href || pathname.startsWith(`${href}/`)
   }
+
+  const nav = isAdmin
+    ? [...NAV, { title: "Admin", href: "/admin", icon: Shield }]
+    : NAV
 
   return (
     <Sidebar>
@@ -48,7 +53,7 @@ export function AppSidebar({ userEmail }) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={isActive(item.href)}>
                     <Link href={item.href}>

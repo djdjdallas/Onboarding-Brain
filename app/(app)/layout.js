@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
+import { isAdmin } from "@/lib/auth/roles"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   SidebarProvider,
@@ -27,7 +28,7 @@ export default async function AppLayout({ children }) {
 
   return (
     <SidebarProvider>
-      <AppSidebar userEmail={user.email} />
+      <AppSidebar userEmail={user.email} isAdmin={isAdmin(user.email)} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
