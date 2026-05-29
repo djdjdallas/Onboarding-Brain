@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PageDetailForm } from "@/components/page-detail-form"
 import { GenerateJiraDescription } from "@/components/generate-jira-description"
+import { MarkReviewedButton } from "@/components/mark-reviewed-button"
 import { HistoryTab } from "@/components/dealer-settings/history-tab"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,9 +23,9 @@ export default async function PageDetailPage({ params }) {
   const { data: page } = await supabase
     .from("pages")
     .select(
-      "id, dealer_id, model, pma_city, status, next_step, url, priority_score, " +
-        "manual_priority_adjustment, manually_scheduled_due_date, notes, labels, " +
-        "page_templates(page_type, page_family, base_priority, page_intent, required_inputs, guardrail, description_template)"
+      "id, dealer_id, model, pma_city, status, next_step, url, priority_score, due_date, " +
+        "manual_priority_adjustment, manually_scheduled_due_date, last_reviewed_at, notes, labels, " +
+        "page_templates(page_type, page_family, base_priority, cadence, page_intent, required_inputs, guardrail, description_template)"
     )
     .eq("id", pageId)
     .single()
@@ -104,6 +105,22 @@ export default async function PageDetailPage({ params }) {
               <p>
                 = <span className="font-semibold tabular-nums">{Number(page.priority_score ?? 0).toFixed(2)}</span>
               </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div className="space-y-1.5">
+                <CardTitle className="text-base">Scheduling</CardTitle>
+                <CardDescription>
+                  Cadence: {tpl.cadence ?? "—"} · Due: {page.manually_scheduled_due_date ?? page.due_date ?? "—"}
+                  {page.manually_scheduled_due_date ? " (manual)" : ""}
+                </CardDescription>
+              </div>
+              <MarkReviewedButton dealerId={id} pageId={pageId} />
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Last reviewed: {page.last_reviewed_at ?? "never"}
             </CardContent>
           </Card>
 

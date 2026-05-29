@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { dealerWizardSchema } from "@/lib/validation/dealer"
 import { generatePages } from "@/lib/page-generator"
+import { loadTierCapacity } from "@/lib/scheduler"
 import { KIA_MODELS } from "@/lib/eligibility"
 
 /**
@@ -95,6 +96,7 @@ export async function createDealer(input) {
   }
 
   const byOrder = (a, b) => a.priority_order - b.priority_order
+  const capacity = await loadTierCapacity(supabase)
   const pageRows = generatePages({
     templates,
     pmas: pmaRes.data
@@ -108,6 +110,7 @@ export async function createDealer(input) {
     urls: data.urls,
     knownModels: KIA_MODELS,
     campaignStart: new Date(),
+    capacity,
   }).map((row) => ({ ...row, dealer_id: dealer.id }))
 
   const { error: pagesErr } = await supabase.from("pages").insert(pageRows)

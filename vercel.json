@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/audit-all-dealers",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/reschedule-cadence",
+      "schedule": "0 5 * * *"
     }
   ]
 }

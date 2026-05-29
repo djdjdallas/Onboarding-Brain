@@ -5,6 +5,7 @@ import Papa from "papaparse"
 
 import { createClient } from "@/lib/supabase/server"
 import { generatePages } from "@/lib/page-generator"
+import { loadTierCapacity } from "@/lib/scheduler"
 import { buildJiraRows } from "@/lib/jira-export"
 import { KIA_MODELS } from "@/lib/eligibility"
 
@@ -46,6 +47,7 @@ export async function regenerateDealerPages(dealerId) {
 
   const flags = Object.fromEntries((elig ?? []).map((e) => [e.flag_key, e.flag_value]))
   const byOrder = (a, b) => a.priority_order - b.priority_order
+  const capacity = await loadTierCapacity(supabase)
 
   const pageRows = generatePages({
     templates,
@@ -60,6 +62,7 @@ export async function regenerateDealerPages(dealerId) {
     urls: (existing ?? []).map((p) => p.url),
     knownModels: KIA_MODELS,
     campaignStart: new Date(),
+    capacity,
   }).map((row) => ({ ...row, dealer_id: dealerId }))
 
   // Replace existing pages.

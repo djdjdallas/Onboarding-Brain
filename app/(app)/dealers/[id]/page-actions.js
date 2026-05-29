@@ -5,6 +5,23 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { recordAudit, getActorId } from "@/lib/audit"
 import { recomputeScores } from "@/lib/dealer-recalc"
+import { markReviewed } from "@/lib/scheduler"
+
+/** Mark a page reviewed today; cadence sets its next due date. Audited. */
+export async function markPageReviewed(dealerId, pageId) {
+  const supabase = await createClient()
+  const res = await markReviewed(supabase, pageId)
+  if (res?.error) return { error: res.error }
+  await recordAudit(supabase, {
+    entityType: "page",
+    entityId: pageId,
+    actorId: await getActorId(supabase),
+    changes: [{ field: "last_reviewed_at", old: null, new: res.last_reviewed_at }],
+  })
+  revalidatePath(`/dealers/${dealerId}`)
+  revalidatePath(`/dealers/${dealerId}/pages/${pageId}`)
+  return { ok: true, ...res }
+}
 
 const EDITABLE = new Set([
   "status",
