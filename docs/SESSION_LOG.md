@@ -156,25 +156,65 @@ Sheets. Built on branch `v2-admin-ui`.
 
 ---
 
-## Migrations (apply in order)
+## V2.1 — Workflow automation (4 steps, branch `v2.1-workflow`)
+1. **Cadence scheduling** (`0006` pages.last_reviewed_at) — `lib/scheduler.js`
+   reads capacity from `package_tiers` + cadence from `cadence_rules` (admin-
+   tunable, no deploy); "Mark reviewed" sets next due from cadence; daily
+   `/api/cron/reschedule-cadence` rolls due dates forward.
+2. **Subtask generation** (`0007` subtasks) — auto-generate from `subtask_types`
+   when a page hits Optimize; surfaced on page detail; folded into the Jira CSV
+   as sub-task rows with a Parent column.
+3. **AM workload** (`0008` am_workload view) — `/workload`: per-AM overdue /
+   due-7 / due-30 / builds / optimizes.
+4. **Cross-dealer calendar** — `/calendar`: everything due in a month across all
+   dealers, grouped by day, filter by AM.
+
+## V2.2 — Jira two-way sync (credential-gated; `0009` jira keys)
+`lib/jira.js` (REST v2, `isJiraConfigured`) + `lib/jira-sync.js`. Push pages +
+subtasks as issues (storing keys); sync status back (Jira "done" → mark reviewed;
+subtask statuses mirrored). Push/Sync buttons appear only when `JIRA_*` env is
+set; `/api/cron/jira-sync` every 4h. `/settings` shows connection status.
+
+## V2.3 — Intelligence (3 steps)
+1. **AI drafting** — `lib/llm.js` (`@anthropic-ai/sdk`, Claude Opus 4.8, adaptive
+   thinking, cached system prompt). "Draft with AI" on page detail; gated by
+   `ANTHROPIC_API_KEY`.
+2. **Multi-OEM** (`0010` oems + oem_models) — model lineups data-driven; wizard
+   OEM/model pickers + generator read from the dealer's OEM; `/admin/oems` CRUD;
+   seeds take `--oem=`.
+3. **Performance tracking** (`0011` page_metrics) — import a GSC "Pages" CSV
+   (matched by URL) on the Pages tab; Performance card on page detail.
+
+---
+
+## Migrations (apply in order — all under `supabase/migrations/`, rollbacks in `supabase/rollbacks/`)
 `0001` schema · `0002` dashboard view · `0003` findings view · `0004` V2 admin
-tables/columns · `0005` drop pma/model order-unique. Each has a `*_down.sql`.
+tables/columns · `0005` drop pma/model order-unique · `0006` cadence anchor ·
+`0007` subtasks · `0008` am_workload view · `0009` jira keys · `0010` oems +
+oem_models · `0011` page_metrics.
 
 ## Scripts (`package.json`)
-- V1: `seed:templates[:dry]`
+- V1: `seed:templates[:dry]` (now `--oem=`)
 - V2 seeds: `seed:eligibility-types`, `seed:cadence`, `seed:packages`,
-  `seed:subtasks`, `seed:keywords`, `seed:all`
+  `seed:subtasks`, `seed:keywords` (now `--oem=`), `seed:all`
 - Data: `migrate:v2[:dry]`, `cleanup:gate-keys[:dry]`
 
-## Known notes / deferred
-- Admin is open to all signed-in users until `ADMIN_EMAILS` is set.
+## Crons (`vercel.json`)
+`audit-all-dealers` (6am), `reschedule-cadence` (5am), `jira-sync` (every 4h).
+All `CRON_SECRET`-protected; jira-sync no-ops if Jira unconfigured.
+
+## Env vars
+Supabase (3) + `CRON_SECRET` + `ADMIN_EMAILS` (admin allowlist; open if unset) +
+`JIRA_*` (V2.2) + `ANTHROPIC_API_KEY` (V2.3). All integrations no-op until set.
+
+## Known notes / remaining follow-ups
+- Admin open to all signed-in users until `ADMIN_EMAILS` is set.
 - Audit "who" + CSV Reporter resolve via `account_managers.email` = auth email.
 - `npm run lint` needs the `typescript` package (JS-only project, not installed);
   `npm run build` is the gate.
-- `package_tiers` capacity is reference data; the generator still uses its own
-  `TIER_CAPACITY` (kept in sync) until the V2.1 scheduler.
-- **Deferred:** V2.1 (auto-cadence scheduler, subtask generation, cross-dealer
-  calendar), V2.2 (Jira two-way sync), V2.3 (LLM drafting, multi-OEM,
-  rank tracking).
+- Per-OEM **template seeding** still assumes Kia model names in the dedup regex —
+  wiring the OEM's lineup into `seed-page-templates` is a follow-up.
+- Live **GSC OAuth** sync (vs. CSV import) and the Jira flows are untested here
+  (no creds); both are built to activate on config.
 
 See `docs/V2_RUNBOOK.md` for the setup + 8-deliverable test steps.
