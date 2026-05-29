@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
 import { PagesTab } from "@/components/pages-tab"
+import { DiscoveredTab } from "@/components/discovered-tab"
 import { RunAuditButton } from "@/components/run-audit-button"
 import { FindingsList } from "@/components/findings-list"
 import { Button } from "@/components/ui/button"
@@ -60,6 +61,19 @@ export default async function DealerDetailPage({ params }) {
     .eq("dealer_id", id)
     .order("created_at", { ascending: false })
 
+  const [{ data: discovered }, { data: dTemplates }, { data: dModels }, { data: dPmas }] =
+    await Promise.all([
+      supabase
+        .from("discovered_pages")
+        .select("id, url, first_seen_at, suggested_template_id, suggested_confidence, status, notes")
+        .eq("dealer_id", id)
+        .order("first_seen_at", { ascending: false }),
+      supabase.from("page_templates").select("id, page_type, requires_model, requires_pma").eq("oem", "KIA").order("page_type"),
+      supabase.from("priority_models").select("model").eq("dealer_id", id).order("priority_order"),
+      supabase.from("pmas").select("city").eq("dealer_id", id).order("priority_order"),
+    ])
+  const openDiscovered = (discovered ?? []).filter((d) => d.status === "open").length
+
   const openFindings = (findings ?? []).filter((f) => f.status === "open").length
 
   return (
@@ -87,6 +101,9 @@ export default async function DealerDetailPage({ params }) {
       <Tabs defaultValue="pages">
         <TabsList>
           <TabsTrigger value="pages">Pages</TabsTrigger>
+          <TabsTrigger value="discovered">
+            Discovered{openDiscovered ? ` (${openDiscovered})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="findings">
             Findings{openFindings ? ` (${openFindings})` : ""}
           </TabsTrigger>
@@ -94,6 +111,16 @@ export default async function DealerDetailPage({ params }) {
 
         <TabsContent value="pages" className="mt-4">
           <PagesTab dealerId={id} dealerName={dealer.name} pages={pages} />
+        </TabsContent>
+
+        <TabsContent value="discovered" className="mt-4">
+          <DiscoveredTab
+            dealerId={id}
+            discovered={discovered ?? []}
+            templates={dTemplates ?? []}
+            models={(dModels ?? []).map((m) => m.model)}
+            pmas={(dPmas ?? []).map((p) => p.city)}
+          />
         </TabsContent>
 
         <TabsContent value="findings" className="mt-4">
