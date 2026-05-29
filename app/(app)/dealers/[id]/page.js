@@ -25,7 +25,9 @@ export default async function DealerDetailPage({ params }) {
     .from("dealers")
     .select(
       "id, name, oem, package_tier, website, address, account_managers(name), " +
-        "pmas(city, priority_order, mod_score), " +
+        // Disambiguate: dealers now has two FKs to pmas (pmas.dealer_id and
+        // dealers.primary_pma_id), so name the relationship explicitly.
+        "pmas!pmas_dealer_id_fkey(city, priority_order, mod_score), " +
         "priority_models(model, priority_order, mod_score), " +
         "eligibility(flag_key, flag_value)"
     )
