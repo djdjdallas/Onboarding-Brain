@@ -7,6 +7,7 @@ import {
   Building2,
   AlertTriangle,
   CalendarClock,
+  CalendarDays,
   Settings,
   Shield,
   LogOut,
@@ -30,6 +31,7 @@ const NAV = [
   { title: "Dealers", href: "/dealers", icon: Building2 },
   { title: "Audit Findings", href: "/findings", icon: AlertTriangle },
   { title: "Workload", href: "/workload", icon: CalendarClock },
+  { title: "Calendar", href: "/calendar", icon: CalendarDays },
   { title: "Settings", href: "/settings", icon: Settings },
 ]
 
