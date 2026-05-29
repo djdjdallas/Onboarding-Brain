@@ -8,6 +8,7 @@ import { generatePages } from "@/lib/page-generator"
 import { loadTierCapacity } from "@/lib/scheduler"
 import { buildJiraRows, pageLabel } from "@/lib/jira-export"
 import { isJiraConfigured, jiraConfig, createIssue } from "@/lib/jira"
+import { syncDealerFromJira } from "@/lib/jira-sync"
 import { KIA_MODELS } from "@/lib/eligibility"
 
 /**
@@ -211,4 +212,15 @@ export async function pushPagesToJira(dealerId, pageIds = []) {
 
   revalidatePath(`/dealers/${dealerId}`)
   return { ok: true, created, failed, skipped: (pages?.length ?? 0) - toPush.length }
+}
+
+/** Pull status back from Jira for this dealer. Credential-gated. */
+export async function syncDealerJira(dealerId) {
+  if (!isJiraConfigured()) {
+    return { error: "Jira isn't configured. Set JIRA_* env vars (see Settings)." }
+  }
+  const supabase = await createClient()
+  const res = await syncDealerFromJira(supabase, dealerId)
+  revalidatePath(`/dealers/${dealerId}`)
+  return { ok: true, ...res }
 }

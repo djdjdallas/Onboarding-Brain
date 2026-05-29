@@ -4,9 +4,9 @@ import { useMemo, useState, useTransition, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Download, ExternalLink } from "lucide-react"
+import { Download, ExternalLink, RefreshCw } from "lucide-react"
 
-import { exportPagesCsv, pushPagesToJira } from "@/app/(app)/dealers/[id]/actions"
+import { exportPagesCsv, pushPagesToJira, syncDealerJira } from "@/app/(app)/dealers/[id]/actions"
 import {
   updatePageFields,
   bulkBacklogPages,
@@ -65,6 +65,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
   const router = useRouter()
   const [rows, setRows] = useState(pages)
   const [pushing, startPush] = useTransition()
+  const [syncing, startSync] = useTransition()
   const [filters, setFilters] = useState({
     page_family: ALL,
     status: ALL,
@@ -192,6 +193,15 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
     })
   }
 
+  function syncJira() {
+    startSync(async () => {
+      const res = await syncDealerJira(dealerId)
+      if (res?.error) return toast.error(res.error)
+      toast.success(`Synced ${res.checked} from Jira · ${res.completed} completed`)
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -210,10 +220,16 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
             {exporting ? "Exporting…" : "Export CSV"}
           </Button>
           {jiraConfigured ? (
-            <Button size="sm" variant="outline" onClick={pushJira} disabled={filtered.length === 0 || pushing}>
-              <ExternalLink />
-              {pushing ? "Pushing…" : "Push to Jira"}
-            </Button>
+            <>
+              <Button size="sm" variant="outline" onClick={pushJira} disabled={filtered.length === 0 || pushing}>
+                <ExternalLink />
+                {pushing ? "Pushing…" : "Push to Jira"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={syncJira} disabled={syncing}>
+                <RefreshCw className={syncing ? "animate-spin" : ""} />
+                {syncing ? "Syncing…" : "Sync from Jira"}
+              </Button>
+            </>
           ) : null}
         </div>
       </div>
