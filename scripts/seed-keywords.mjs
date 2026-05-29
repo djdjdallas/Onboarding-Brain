@@ -15,7 +15,7 @@ import { getServiceClient, DRY_RUN, csvArgPath } from "./_supabase.mjs"
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const CSV_PATH = resolve(ROOT, csvArgPath() ?? "seed/keywords.csv")
-const OEM = "KIA"
+const OEM = (process.argv.find((a) => a.startsWith("--oem=")) ?? "--oem=KIA").slice(6) || "KIA"
 
 function main() {
   let csv

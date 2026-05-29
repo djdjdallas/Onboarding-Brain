@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server"
 import { dealerWizardSchema } from "@/lib/validation/dealer"
 import { generatePages } from "@/lib/page-generator"
 import { loadTierCapacity } from "@/lib/scheduler"
-import { KIA_MODELS } from "@/lib/eligibility"
+import { loadOemModels } from "@/lib/oem"
 
 /**
  * Creates a dealer + its PMAs, priority models, and eligibility rows from the
@@ -97,6 +97,7 @@ export async function createDealer(input) {
 
   const byOrder = (a, b) => a.priority_order - b.priority_order
   const capacity = await loadTierCapacity(supabase)
+  const knownModels = await loadOemModels(supabase, data.oem || "KIA")
   const pageRows = generatePages({
     templates,
     pmas: pmaRes.data
@@ -108,7 +109,7 @@ export async function createDealer(input) {
     flags: data.eligibility,
     tier: data.package_tier,
     urls: data.urls,
-    knownModels: KIA_MODELS,
+    knownModels,
     campaignStart: new Date(),
     capacity,
   }).map((row) => ({ ...row, dealer_id: dealer.id }))

@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
 import { dealerWizardSchema, STEP_FIELDS } from "@/lib/validation/dealer"
-import { humanizeFlag, KIA_MODELS } from "@/lib/eligibility"
+import { humanizeFlag } from "@/lib/eligibility"
 import { createDealer } from "@/app/(app)/dealers/new/actions"
 import { SortableList } from "./sortable-list"
 
@@ -54,10 +54,11 @@ function FieldError({ name }) {
 // ---------------------------------------------------------------------------
 // Step 1 — basics
 // ---------------------------------------------------------------------------
-function BasicsStep({ accountManagers }) {
+function BasicsStep({ accountManagers, oems }) {
   const { register, setValue, watch } = useFormContext()
   const tier = watch("package_tier")
   const amId = watch("am_id")
+  const oem = watch("oem")
 
   return (
     <div className="grid gap-4">
@@ -69,9 +70,25 @@ function BasicsStep({ accountManagers }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="oem">OEM</Label>
-          <Input id="oem" disabled {...register("oem")} />
-          <p className="text-xs text-muted-foreground">Kia only for V1.</p>
+          <Label>OEM</Label>
+          <Select
+            value={oem ?? ""}
+            onValueChange={(v) => {
+              setValue("oem", v)
+              setValue("models", []) // model lineup is OEM-specific
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select OEM" />
+            </SelectTrigger>
+            <SelectContent>
+              {oems.map((o) => (
+                <SelectItem key={o.name} value={o.name}>
+                  {o.label ?? o.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="grid gap-2">
           <Label>Package tier</Label>
@@ -182,9 +199,11 @@ function PmasStep() {
 // ---------------------------------------------------------------------------
 // Step 3 — priority models
 // ---------------------------------------------------------------------------
-function ModelsStep() {
-  const { control } = useFormContext()
+function ModelsStep({ modelsByOem }) {
+  const { control, watch } = useFormContext()
   const { fields, append, remove, move } = useFieldArray({ control, name: "models" })
+  const oem = watch("oem")
+  const oemModels = modelsByOem?.[oem] ?? []
 
   const added = new Set(fields.map((f) => f.model))
 
@@ -197,7 +216,12 @@ function ModelsStep() {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap gap-2">
-        {KIA_MODELS.map((m) => (
+        {oemModels.length === 0 ? (
+          <span className="text-sm text-muted-foreground">
+            No models defined for this OEM — add them in Admin → OEMs.
+          </span>
+        ) : null}
+        {oemModels.map((m) => (
           <Button
             key={m}
             type="button"
@@ -279,7 +303,7 @@ function UrlsStep({ urlsText, setUrlsText }) {
 // ---------------------------------------------------------------------------
 // Orchestrator
 // ---------------------------------------------------------------------------
-export function DealerWizard({ accountManagers, flags }) {
+export function DealerWizard({ accountManagers, flags, oems, modelsByOem }) {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [urlsText, setUrlsText] = useState("")
@@ -289,7 +313,7 @@ export function DealerWizard({ accountManagers, flags }) {
     mode: "onTouched",
     defaultValues: {
       name: "",
-      oem: "KIA",
+      oem: oems?.[0]?.name ?? "KIA",
       website: "",
       address: "",
       package_tier: undefined,
@@ -342,9 +366,9 @@ export function DealerWizard({ accountManagers, flags }) {
 
         <CardContent>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="grid gap-6">
-            {step === 0 && <BasicsStep accountManagers={accountManagers} />}
+            {step === 0 && <BasicsStep accountManagers={accountManagers} oems={oems} />}
             {step === 1 && <PmasStep />}
-            {step === 2 && <ModelsStep />}
+            {step === 2 && <ModelsStep modelsByOem={modelsByOem} />}
             {step === 3 && <EligibilityStep flags={flags} />}
             {step === 4 && (
               <UrlsStep urlsText={urlsText} setUrlsText={setUrlsText} />

@@ -45,7 +45,7 @@ const CSV_PATH = csvArg
   ? resolve(csvArg.slice("--csv=".length))
   : resolve(ROOT, "seed/main_page_library.csv")
 const DRY_RUN = process.argv.includes("--dry-run")
-const OEM = "KIA"
+const OEM = (process.argv.find((a) => a.startsWith("--oem=")) ?? "--oem=KIA").slice(6) || "KIA"
 
 // Kia models, longest-first so multi-token names match before substrings.
 const MODELS = [
