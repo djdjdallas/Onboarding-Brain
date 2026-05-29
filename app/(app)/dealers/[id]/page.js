@@ -112,11 +112,12 @@ export default async function DealerDetailPage({ params }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{dealer.name}</h1>
-          <p className="text-muted-foreground">
+        <div className="space-y-1">
+          <h1 className="text-display font-medium tracking-tight">{dealer.name}</h1>
+          <p className="text-small text-muted-foreground">
             {dealer.oem} · {dealer.package_tier}
             {dealer.account_managers?.name ? ` · ${dealer.account_managers.name}` : ""}
+            {dealer.website ? ` · ${dealer.website}` : ""}
             {" · "}
             {pages.length} pages
           </p>
@@ -132,7 +133,7 @@ export default async function DealerDetailPage({ params }) {
       </div>
 
       <Tabs defaultValue="pages">
-        <TabsList>
+        <TabsList variant="line" className="w-full justify-start border-b">
           <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="discovered">
             Discovered{openDiscovered ? ` (${openDiscovered})` : ""}

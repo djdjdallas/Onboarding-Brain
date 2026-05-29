@@ -38,7 +38,7 @@ const ALL = "__all__"
 const STATUS_OPTIONS = ["LIVE", "MISSING", "Strategy", "Available for Build", "Backlog"]
 const NEXT_OPTIONS = ["Build", "Optimize", "Backlog"]
 const cellCls =
-  "w-full rounded border bg-transparent px-1.5 py-1 text-xs outline-none focus:border-ring"
+  "w-full rounded-md border border-border bg-transparent px-2 py-1 text-small outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
 
 function distinct(rows, key) {
   return [...new Set(rows.map((r) => r[key]).filter(Boolean))].sort()
@@ -236,7 +236,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-4 text-small text-muted-foreground">
         <label className="flex items-center gap-1.5">
           <Checkbox checked={flags.notes} onCheckedChange={(c) => setFlags((f) => ({ ...f, notes: !!c }))} />
           Has notes
@@ -249,15 +249,11 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
           <Checkbox checked={flags.adj} onCheckedChange={(c) => setFlags((f) => ({ ...f, adj: !!c }))} />
           Adjusted priority
         </label>
-        <span className="ml-auto">
-          {filtered.length} of {rows.length}
-          {selected.size ? ` · ${selected.size} selected` : ""}
-        </span>
       </div>
 
       {selected.size > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
-          <span className="text-sm font-medium">{selected.size} selected</span>
+        <div className="flex flex-wrap items-center gap-2 rounded-md border bg-primary/5 px-3 py-2">
+          <span className="text-small font-medium">{selected.size} selected</span>
           <Button size="xs" variant="outline" onClick={bulkBacklog}>
             Mark as Backlog
           </Button>
@@ -343,7 +339,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
                       ))}
                     </select>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="text-right font-mono tabular-nums">
                     {p.priority_score != null ? Number(p.priority_score).toFixed(2) : "—"}
                   </TableCell>
                   <TableCell>
@@ -369,7 +365,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
                   </TableCell>
                   <TableCell>
                     <input
-                      className={cellCls}
+                      className={`${cellCls} font-mono`}
                       defaultValue={p.url ?? ""}
                       placeholder="https://…"
                       onBlur={(e) => {
@@ -381,7 +377,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {(p.labels ?? []).map((l) => (
-                        <Badge key={l} variant="secondary" className="text-xs">
+                        <Badge key={l} variant="secondary" className="text-tiny">
                           {l}
                         </Badge>
                       ))}
@@ -393,6 +389,11 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
           </TableBody>
         </Table>
       </div>
+
+      <p className="text-tiny text-muted-foreground">
+        Showing {filtered.length} of {rows.length} pages
+        {selected.size ? ` · ${selected.size} selected` : ""}
+      </p>
     </div>
   )
 }
