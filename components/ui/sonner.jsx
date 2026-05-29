@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner";
-import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
 
 const Toaster = ({
   ...props
@@ -13,19 +13,13 @@ const Toaster = ({
     <Sonner
       theme={theme}
       className="toaster group"
+      position="bottom-right"
+      // Calm aesthetic: no status icons (PRD), only the loading spinner.
       icons={{
-        success: (
-          <CircleCheckIcon className="size-4" />
-        ),
-        info: (
-          <InfoIcon className="size-4" />
-        ),
-        warning: (
-          <TriangleAlertIcon className="size-4" />
-        ),
-        error: (
-          <OctagonXIcon className="size-4" />
-        ),
+        success: null,
+        info: null,
+        warning: null,
+        error: null,
         loading: (
           <Loader2Icon className="size-4 animate-spin" />
         ),
@@ -39,6 +33,7 @@ const Toaster = ({
         }
       }
       toastOptions={{
+        duration: 2000,
         classNames: {
           toast: "cn-toast",
         },
