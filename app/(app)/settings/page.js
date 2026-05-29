@@ -1,4 +1,5 @@
 import { jiraConfig, isJiraConfigured } from "@/lib/jira"
+import { isLlmConfigured } from "@/lib/llm"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -11,6 +12,7 @@ import {
 export default function SettingsPage() {
   const cfg = jiraConfig()
   const configured = isJiraConfigured()
+  const llmOn = isLlmConfigured()
 
   return (
     <div className="space-y-6">
@@ -55,6 +57,25 @@ export default function SettingsPage() {
               use the CSV export.
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="text-base">AI content drafting</CardTitle>
+            <CardDescription>
+              Draft first-pass SEO copy per page with Claude (Opus 4.8).
+            </CardDescription>
+          </div>
+          <Badge variant={llmOn ? "default" : "outline"}>
+            {llmOn ? "Enabled" : "Not configured"}
+          </Badge>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          {llmOn
+            ? "Use “Draft with AI” on any page detail."
+            : "Set ANTHROPIC_API_KEY in your environment to enable the “Draft with AI” button on page details."}
         </CardContent>
       </Card>
     </div>

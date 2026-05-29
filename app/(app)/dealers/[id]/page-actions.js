@@ -7,6 +7,63 @@ import { recordAudit, getActorId } from "@/lib/audit"
 import { recomputeScores } from "@/lib/dealer-recalc"
 import { markReviewed } from "@/lib/scheduler"
 import { generateSubtasksForPage } from "@/lib/subtasks"
+import { isLlmConfigured, draftPageContent } from "@/lib/llm"
+import { pageLabel } from "@/lib/jira-export"
+import { humanizeFlag } from "@/lib/eligibility"
+
+/** Draft page content with Claude. Credential-gated; returns { draft } or { error }. */
+export async function draftPageContentAction(dealerId, pageId) {
+  if (!isLlmConfigured()) {
+    return { error: "AI drafting isn't configured. Set ANTHROPIC_API_KEY (see Settings)." }
+  }
+  const supabase = await createClient()
+
+  const { data: page } = await supabase
+    .from("pages")
+    .select(
+      "id, model, pma_city, page_templates(page_type, page_intent, required_inputs, guardrail)"
+    )
+    .eq("id", pageId)
+    .single()
+  if (!page) return { error: "Page not found." }
+
+  const [{ data: dealer }, { data: elig }] = await Promise.all([
+    supabase.from("dealers").select("name, website, address").eq("id", dealerId).single(),
+    supabase
+      .from("eligibility")
+      .select("flag_key, eligibility_flag_types(label)")
+      .eq("dealer_id", dealerId)
+      .eq("flag_value", true),
+  ])
+
+  const flags = (elig ?? [])
+    .map((e) => e.eligibility_flag_types?.label ?? humanizeFlag(e.flag_key))
+    .join(", ")
+  const factSheet = [
+    dealer?.website ? `Website: ${dealer.website}` : null,
+    dealer?.address ? `Address: ${dealer.address}` : null,
+    flags ? `Programs/eligibility: ${flags}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n")
+
+  const tpl = page.page_templates ?? {}
+  try {
+    const draft = await draftPageContent({
+      dealerName: dealer?.name ?? "the dealer",
+      pageLabel: pageLabel({ page_type: tpl.page_type, model: page.model, pma_city: page.pma_city }),
+      model: page.model,
+      pmaCity: page.pma_city,
+      intent: tpl.page_intent,
+      requiredInputs: tpl.required_inputs,
+      guardrail: tpl.guardrail,
+      factSheet,
+    })
+    return { ok: true, draft }
+  } catch (e) {
+    return { error: String(e?.message ?? e) }
+  }
+}
 
 /** Manually (re)generate subtasks for a page from subtask_types. */
 export async function generatePageSubtasks(dealerId, pageId) {

@@ -4,7 +4,9 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PageDetailForm } from "@/components/page-detail-form"
 import { GenerateJiraDescription } from "@/components/generate-jira-description"
+import { DraftContentButton } from "@/components/draft-content-button"
 import { MarkReviewedButton } from "@/components/mark-reviewed-button"
+import { isLlmConfigured } from "@/lib/llm"
 import { SubtasksCard } from "@/components/subtasks-card"
 import { HistoryTab } from "@/components/dealer-settings/history-tab"
 import { Badge } from "@/components/ui/badge"
@@ -155,11 +157,16 @@ export default async function PageDetailPage({ params }) {
                   <p className="whitespace-pre-wrap">{tpl.guardrail}</p>
                 </div>
               ) : null}
-              <GenerateJiraDescription
-                dealerName={dealer?.name}
-                page={{ page_type: tpl.page_type, model: page.model, pma_city: page.pma_city, url: page.url }}
-                description={tpl.description_template}
-              />
+              <div className="flex flex-wrap gap-2">
+                <GenerateJiraDescription
+                  dealerName={dealer?.name}
+                  page={{ page_type: tpl.page_type, model: page.model, pma_city: page.pma_city, url: page.url }}
+                  description={tpl.description_template}
+                />
+                {isLlmConfigured() ? (
+                  <DraftContentButton dealerId={id} pageId={pageId} />
+                ) : null}
+              </div>
             </CardContent>
           </Card>
 
