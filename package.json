@@ -14,7 +14,9 @@
     "seed:packages": "node --env-file=.env.local scripts/seed-package-tiers.mjs",
     "seed:all": "npm run seed:eligibility-types && npm run seed:cadence && npm run seed:packages",
     "migrate:v2": "node --env-file=.env.local scripts/migrate-v1-to-v2.mjs",
-    "migrate:v2:dry": "node --env-file=.env.local scripts/migrate-v1-to-v2.mjs --dry-run"
+    "migrate:v2:dry": "node --env-file=.env.local scripts/migrate-v1-to-v2.mjs --dry-run",
+    "cleanup:gate-keys": "node --env-file=.env.local scripts/cleanup-gate-keys.mjs",
+    "cleanup:gate-keys:dry": "node --env-file=.env.local scripts/cleanup-gate-keys.mjs --dry-run"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
