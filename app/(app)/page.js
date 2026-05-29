@@ -8,9 +8,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
+        <div className="space-y-1">
+          <h1 className="text-display font-medium tracking-tight">Dashboard</h1>
+          <p className="text-small text-muted-foreground">
             All dealers and their open audit findings.
           </p>
         </div>

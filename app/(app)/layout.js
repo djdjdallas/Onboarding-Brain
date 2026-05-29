@@ -30,10 +30,10 @@ export default async function AppLayout({ children }) {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider style={{ "--sidebar-width": "15rem" }}>
       <AppSidebar userEmail={user.email} isAdmin={isAdmin(user.email)} />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Button asChild variant="ghost" size="icon-sm" className="ml-auto" title="How it works">
@@ -42,7 +42,7 @@ export default async function AppLayout({ children }) {
             </Link>
           </Button>
         </header>
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 px-8 py-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )

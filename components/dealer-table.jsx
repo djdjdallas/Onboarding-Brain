@@ -11,19 +11,39 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/ui/status-pill"
+import { cn } from "@/lib/utils"
 
-const TIER_VARIANT = {
-  Elite: "default",
-  Advanced: "secondary",
-  Essential: "outline",
+// Tier pills follow the design system: Elite = accent-subtle, Advanced =
+// strategy, Essential = backlog. (Tiers aren't status semantics, so they get
+// their own small pill rather than a StatusPill variant.)
+const TIER = {
+  Elite: { bg: "bg-primary/10", dot: "bg-primary" },
+  Advanced: { bg: "bg-status-strategy-bg", dot: "bg-status-strategy" },
+  Essential: { bg: "bg-status-backlog-bg", dot: "bg-status-backlog" },
+}
+
+function TierPill({ tier }) {
+  if (!tier) return <span className="text-muted-foreground/70">—</span>
+  const v = TIER[tier] ?? TIER.Essential
+  return (
+    <span
+      className={cn(
+        "inline-flex h-5 w-fit items-center gap-1.5 rounded-[3px] px-2 text-tiny font-medium text-foreground",
+        v.bg
+      )}
+    >
+      <span className={cn("size-1.5 shrink-0 rounded-full", v.dot)} aria-hidden="true" />
+      {tier}
+    </span>
+  )
 }
 
 export function DealerTable({ dealers }) {
   const router = useRouter()
 
   return (
-    <div className="rounded-md border">
+    <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -45,18 +65,20 @@ export function DealerTable({ dealers }) {
               <TableCell className="font-medium">{d.name}</TableCell>
               <TableCell className="text-muted-foreground">{d.oem}</TableCell>
               <TableCell>
-                <Badge variant={TIER_VARIANT[d.package_tier] ?? "outline"}>
-                  {d.package_tier}
-                </Badge>
+                <TierPill tier={d.package_tier} />
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {d.am_name ?? "—"}
               </TableCell>
               <TableCell className="text-right">
                 {d.open_findings > 0 ? (
-                  <Badge variant="destructive">{d.open_findings}</Badge>
+                  <StatusPill
+                    status="error"
+                    label={`${d.open_findings} ${d.open_findings === 1 ? "issue" : "issues"}`}
+                    className="ml-auto"
+                  />
                 ) : (
-                  <span className="text-muted-foreground">0</span>
+                  <span className="text-muted-foreground/70">—</span>
                 )}
               </TableCell>
               <TableCell className="text-muted-foreground">
