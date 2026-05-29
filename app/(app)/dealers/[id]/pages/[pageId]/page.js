@@ -9,7 +9,7 @@ import { MarkReviewedButton } from "@/components/mark-reviewed-button"
 import { isLlmConfigured } from "@/lib/llm"
 import { SubtasksCard } from "@/components/subtasks-card"
 import { HistoryTab } from "@/components/dealer-settings/history-tab"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill, statusVariant } from "@/components/ui/status-pill"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -84,15 +84,15 @@ export default async function PageDetailPage({ params }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{tpl.page_type}</h1>
-            <p className="text-muted-foreground">
+          <div className="space-y-1">
+            <h1 className="text-display font-medium tracking-tight">{tpl.page_type}</h1>
+            <p className="text-small text-muted-foreground">
               {dealer?.name}
               {page.model ? ` · ${page.model}` : ""}
               {page.pma_city ? ` · ${page.pma_city}` : ""}
             </p>
           </div>
-          <Badge variant="outline">{page.status}</Badge>
+          <StatusPill status={statusVariant(page.status)} label={page.status} />
         </div>
         <Button variant="outline" asChild>
           <Link href={`/dealers/${id}`}>Back to dealer</Link>
@@ -120,7 +120,7 @@ export default async function PageDetailPage({ params }) {
                 {boost} (missing) + {adj.toFixed(2)} (adj)
               </p>
               <p>
-                = <span className="font-semibold tabular-nums">{Number(page.priority_score ?? 0).toFixed(2)}</span>
+                = <span className="font-mono font-medium tabular-nums">{Number(page.priority_score ?? 0).toFixed(2)}</span>
               </p>
             </CardContent>
           </Card>

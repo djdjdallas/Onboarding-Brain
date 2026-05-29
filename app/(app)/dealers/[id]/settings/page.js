@@ -68,9 +68,9 @@ export default async function DealerSettingsPage({ params }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{dealer.name}</h1>
-          <p className="text-muted-foreground">Settings</p>
+        <div className="space-y-1">
+          <h1 className="text-display font-medium tracking-tight">{dealer.name}</h1>
+          <p className="text-small text-muted-foreground">Settings</p>
         </div>
         <Button variant="outline" asChild>
           <Link href={`/dealers/${id}`}>Back to dealer</Link>
@@ -78,7 +78,7 @@ export default async function DealerSettingsPage({ params }) {
       </div>
 
       <Tabs defaultValue="info">
-        <TabsList>
+        <TabsList variant="line" className="w-full justify-start border-b">
           <TabsTrigger value="info">Info</TabsTrigger>
           <TabsTrigger value="pmas">PMAs</TabsTrigger>
           <TabsTrigger value="models">Models</TabsTrigger>

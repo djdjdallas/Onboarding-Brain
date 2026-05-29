@@ -147,7 +147,7 @@ export function FactSheet({ factSheet }) {
                   {factSheet.urlsByFamily[fam].map((u) => (
                     <li key={u.url} className="text-muted-foreground">
                       {u.label} —{" "}
-                      <a href={u.url} target="_blank" rel="noreferrer" className="underline">
+                      <a href={u.url} target="_blank" rel="noreferrer" className="font-mono text-tiny underline">
                         {u.url}
                       </a>
                     </li>

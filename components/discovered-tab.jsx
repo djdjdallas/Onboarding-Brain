@@ -11,7 +11,7 @@ import {
   bulkDismissDiscovered,
 } from "@/app/(app)/dealers/[id]/discovered-actions"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/ui/status-pill"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/table"
 
 const ALL = "__all__"
-const STATUS_VARIANT = { open: "destructive", accepted: "secondary", dismissed: "outline", flagged: "default" }
+const DISC_VARIANT = { open: "error", accepted: "live", dismissed: "backlog", flagged: "strategy" }
 
 export function DiscoveredTab({ dealerId, discovered, templates, models, pmas }) {
   const router = useRouter()
@@ -136,7 +136,7 @@ export function DiscoveredTab({ dealerId, discovered, templates, models, pmas })
             <SelectItem value="0.8">≥ 80%</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground">{filtered.length} pages</span>
+        <span className="text-small text-muted-foreground">{filtered.length} pages</span>
         {selected.size ? (
           <Button size="sm" variant="outline" className="ml-auto" onClick={doBulkDismiss}>
             Dismiss {selected.size}
@@ -170,7 +170,7 @@ export function DiscoveredTab({ dealerId, discovered, templates, models, pmas })
                     <Checkbox checked={selected.has(d.id)} onCheckedChange={() => toggle(d.id)} />
                   </TableCell>
                   <TableCell className="max-w-72 truncate">
-                    <a href={d.url} target="_blank" rel="noreferrer" className="underline">
+                    <a href={d.url} target="_blank" rel="noreferrer" className="font-mono text-tiny underline">
                       {d.url}
                     </a>
                   </TableCell>
@@ -190,7 +190,7 @@ export function DiscoveredTab({ dealerId, discovered, templates, models, pmas })
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={STATUS_VARIANT[d.status] ?? "outline"}>{d.status}</Badge>
+                    <StatusPill status={DISC_VARIANT[d.status] ?? "backlog"} label={d.status} />
                   </TableCell>
                   <TableCell className="text-right">
                     {d.status === "open" || d.status === "flagged" ? (
@@ -206,7 +206,7 @@ export function DiscoveredTab({ dealerId, discovered, templates, models, pmas })
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground">reviewed</span>
+                      <span className="text-tiny text-muted-foreground">reviewed</span>
                     )}
                   </TableCell>
                 </TableRow>
