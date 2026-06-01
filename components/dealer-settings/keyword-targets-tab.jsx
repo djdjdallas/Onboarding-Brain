@@ -57,7 +57,7 @@ export function KeywordTargetsTab({ dealerId, keywords, pmas, targeted }) {
 
   if (keywords.length === 0 || pmas.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-small text-muted-foreground">
         {keywords.length === 0
           ? "No keywords yet — seed or add them in Admin → Keywords."
           : "Add PMAs first."}

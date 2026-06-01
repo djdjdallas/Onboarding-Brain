@@ -111,7 +111,7 @@ export function AccountManagersTable({ managers }) {
           <TableBody>
             {visible.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-10 text-center text-small text-muted-foreground">
                   No account managers.
                 </TableCell>
               </TableRow>

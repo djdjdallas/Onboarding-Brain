@@ -124,7 +124,7 @@ export function PageTemplatesTable({ templates, flagLabels }) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="py-10 text-center text-small text-muted-foreground">
                   No templates match.
                 </TableCell>
               </TableRow>

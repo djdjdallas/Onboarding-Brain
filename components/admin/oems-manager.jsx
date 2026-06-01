@@ -114,7 +114,7 @@ export function OemsManager({ oems }) {
       </div>
 
       {oems.length === 0 ? (
-        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-small text-muted-foreground">
           No OEMs. Add one to enable onboarding dealers for that brand.
         </p>
       ) : (

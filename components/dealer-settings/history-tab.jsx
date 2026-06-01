@@ -38,7 +38,7 @@ export function HistoryTab({ entries }) {
   )
 
   if (entries.length === 0) {
-    return <p className="text-sm text-muted-foreground">No changes recorded yet.</p>
+    return <p className="text-small text-muted-foreground">No changes recorded yet.</p>
   }
 
   return (

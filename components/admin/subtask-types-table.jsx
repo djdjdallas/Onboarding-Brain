@@ -95,7 +95,7 @@ export function SubtaskTypesTable({ subtaskTypes }) {
           <TableBody>
             {subtaskTypes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="py-10 text-center text-small text-muted-foreground">
                   None yet. Run <code>npm run seed:subtasks</code> or add one.
                 </TableCell>
               </TableRow>

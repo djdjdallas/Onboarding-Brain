@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 const STATUSES = ["open", "in_progress", "done"]
-const cellCls = "rounded border bg-transparent px-1.5 py-1 text-xs outline-none focus:border-ring"
+const cellCls =
+  "rounded-md border border-border bg-transparent px-2 py-1 text-small outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
 
 export function SubtasksCard({ dealerId, pageId, subtasks }) {
   const router = useRouter()

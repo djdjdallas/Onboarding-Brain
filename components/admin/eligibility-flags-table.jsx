@@ -110,7 +110,7 @@ export function EligibilityFlagsTable({ flags }) {
           <TableBody>
             {flags.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-10 text-center text-small text-muted-foreground">
                   No flags. Run <code>npm run seed:eligibility-types</code> or add one.
                 </TableCell>
               </TableRow>

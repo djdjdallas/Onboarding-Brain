@@ -165,7 +165,7 @@ export function TemplateForm({ template, cadenceOptions, flagOptions, pageUsage 
         <Label>Gate rules (all required to be eligible)</Label>
         <div className="flex flex-wrap gap-1.5">
           {flagOptions.length === 0 ? (
-            <span className="text-sm text-muted-foreground">No eligibility flags defined.</span>
+            <span className="text-small text-muted-foreground">No eligibility flags defined.</span>
           ) : (
             flagOptions.map((f) => {
               const on = gateRules.includes(f.key)

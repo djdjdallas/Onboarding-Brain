@@ -81,7 +81,7 @@ export function SortableList({ items, onReorder, onRemove, renderAccessory }) {
 
   if (items.length === 0) {
     return (
-      <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+      <p className="rounded-md border border-dashed px-3 py-6 text-center text-small text-muted-foreground">
         Nothing added yet.
       </p>
     )

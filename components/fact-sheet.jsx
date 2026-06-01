@@ -127,7 +127,7 @@ export function FactSheet({ factSheet }) {
               </Badge>
             ))
           ) : (
-            <span className="text-sm text-muted-foreground">None enabled.</span>
+            <span className="text-small text-muted-foreground">None enabled.</span>
           )}
         </CardContent>
       </Card>
