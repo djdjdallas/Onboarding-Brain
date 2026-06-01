@@ -16,8 +16,8 @@ export default async function PageTemplatesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Page Templates</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Page Templates</h2>
+        <p className="text-small text-muted-foreground">
           The page catalog (replaces Main_Page_Library). Click a row to edit.
         </p>
       </div>

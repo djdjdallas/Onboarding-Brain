@@ -17,7 +17,7 @@ import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/ui/status-pill"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
@@ -125,9 +125,10 @@ export function AccountManagersTable({ managers }) {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{am.dealer_count}</TableCell>
                   <TableCell>
-                    <Badge variant={am.is_active ? "default" : "outline"}>
-                      {am.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    <StatusPill
+                      status={am.is_active ? "live" : "backlog"}
+                      label={am.is_active ? "Active" : "Inactive"}
+                    />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -176,14 +177,14 @@ export function AccountManagersTable({ managers }) {
               <Label htmlFor="am-name">Name</Label>
               <Input id="am-name" {...form.register("name")} />
               {form.formState.errors.name ? (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-tiny text-destructive">{form.formState.errors.name.message}</p>
               ) : null}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="am-email">Email</Label>
               <Input id="am-email" type="email" {...form.register("email")} />
               {form.formState.errors.email ? (
-                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                <p className="text-tiny text-destructive">{form.formState.errors.email.message}</p>
               ) : null}
             </div>
             <div className="grid gap-2">

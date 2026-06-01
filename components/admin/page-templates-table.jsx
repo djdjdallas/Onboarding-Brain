@@ -99,7 +99,7 @@ export function PageTemplatesTable({ templates, flagLabels }) {
             <SelectItem value="false">No PMA</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-small text-muted-foreground">
           {filtered.length} of {templates.length}
         </span>
         <Button size="sm" className="ml-auto" asChild>
@@ -138,7 +138,7 @@ export function PageTemplatesTable({ templates, flagLabels }) {
                   <TableCell className="font-medium">{t.page_type}</TableCell>
                   <TableCell className="text-muted-foreground">{t.page_family}</TableCell>
                   <TableCell className="text-muted-foreground">{t.cadence ?? "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="text-right font-mono tabular-nums">
                     {t.base_priority != null ? Number(t.base_priority).toFixed(1) : "—"}
                   </TableCell>
                   <TableCell>

@@ -20,9 +20,9 @@ export default async function AdminLayout({ children }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
-        <p className="text-muted-foreground">
+      <div className="space-y-1">
+        <h1 className="text-display font-medium tracking-tight">Admin</h1>
+        <p className="text-small text-muted-foreground">
           Reference data — the source of truth for templates, flags, tiers, and
           account managers.
         </p>

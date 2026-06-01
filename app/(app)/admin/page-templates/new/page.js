@@ -19,7 +19,7 @@ export default async function NewTemplatePage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium">New template</h2>
+        <h2 className="text-h1 font-medium">New template</h2>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/page-templates">Back</Link>
         </Button>

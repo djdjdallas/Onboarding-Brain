@@ -39,8 +39,8 @@ export default async function PackageTiersPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Package Tiers</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Package Tiers</h2>
+        <p className="text-small text-muted-foreground">
           Capacity assumptions per tier. The page generator currently uses these
           build/optimize numbers for scheduling.
         </p>

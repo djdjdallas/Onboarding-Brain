@@ -23,8 +23,8 @@ export default async function OemsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">OEMs</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">OEMs</h2>
+        <p className="text-small text-muted-foreground">
           Brands and their model lineups. Drives the onboarding wizard&apos;s OEM and
           model pickers. Seed page templates + keywords per OEM with the seed scripts.
         </p>

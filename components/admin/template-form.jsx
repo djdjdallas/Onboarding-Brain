@@ -101,7 +101,7 @@ export function TemplateForm({ template, cadenceOptions, flagOptions, pageUsage 
           <Label htmlFor="page_type">Page type</Label>
           <Input id="page_type" {...register("page_type")} />
           {formState.errors.page_type ? (
-            <p className="text-sm text-destructive">{formState.errors.page_type.message}</p>
+            <p className="text-tiny text-destructive">{formState.errors.page_type.message}</p>
           ) : null}
         </div>
 
@@ -120,7 +120,7 @@ export function TemplateForm({ template, cadenceOptions, flagOptions, pageUsage 
             </SelectContent>
           </Select>
           {formState.errors.page_family ? (
-            <p className="text-sm text-destructive">{formState.errors.page_family.message}</p>
+            <p className="text-tiny text-destructive">{formState.errors.page_family.message}</p>
           ) : null}
         </div>
 

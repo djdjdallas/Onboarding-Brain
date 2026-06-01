@@ -23,8 +23,8 @@ export default async function KeywordsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Keywords</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Keywords</h2>
+        <p className="text-small text-muted-foreground">
           The master keyword list per OEM. Dealers target keywords per PMA in their settings.
         </p>
       </div>

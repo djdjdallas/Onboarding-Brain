@@ -37,8 +37,8 @@ export default async function CadenceRulesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Cadence Rules</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Cadence Rules</h2>
+        <p className="text-small text-muted-foreground">
           How often each cadence tier is reviewed. Drives the V2.1 auto-scheduler.
         </p>
       </div>

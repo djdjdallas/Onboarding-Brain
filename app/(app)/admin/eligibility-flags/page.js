@@ -28,8 +28,8 @@ export default async function EligibilityFlagsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Eligibility Flags</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Eligibility Flags</h2>
+        <p className="text-small text-muted-foreground">
           The flag types dealers toggle and templates gate on. Keys are stable; edit
           labels and grouping freely.
         </p>

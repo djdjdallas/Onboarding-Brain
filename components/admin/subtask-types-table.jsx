@@ -155,7 +155,7 @@ export function SubtaskTypesTable({ subtaskTypes }) {
                   />
                 )}
                 {form.formState.errors[f.name] ? (
-                  <p className="text-sm text-destructive">
+                  <p className="text-tiny text-destructive">
                     {form.formState.errors[f.name].message}
                   </p>
                 ) : null}

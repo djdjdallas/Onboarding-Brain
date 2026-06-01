@@ -21,8 +21,8 @@ export default async function AccountManagersPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Account Managers</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Account Managers</h2>
+        <p className="text-small text-muted-foreground">
           The team. Set a Jira user string so exports populate the Reporter field.
         </p>
       </div>

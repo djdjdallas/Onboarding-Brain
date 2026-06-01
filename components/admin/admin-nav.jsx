@@ -18,10 +18,10 @@ export function AdminNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm",
+              "rounded-md px-3 py-1.5 text-small",
               active
-                ? "bg-muted font-medium text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-primary/10 font-medium text-primary"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
           >
             {item.title}

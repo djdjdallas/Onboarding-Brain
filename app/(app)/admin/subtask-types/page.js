@@ -11,8 +11,8 @@ export default async function SubtaskTypesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Subtask Types</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-h1 font-medium">Subtask Types</h2>
+        <p className="text-small text-muted-foreground">
           Work types and their playbooks. V2.1 will generate Jira subtasks from these.
         </p>
       </div>

@@ -168,7 +168,7 @@ export function EligibilityFlagsTable({ flags }) {
               <Label htmlFor="flag-label">Label</Label>
               <Input id="flag-label" {...form.register("label")} />
               {form.formState.errors.label ? (
-                <p className="text-sm text-destructive">{form.formState.errors.label.message}</p>
+                <p className="text-tiny text-destructive">{form.formState.errors.label.message}</p>
               ) : null}
               {dialog?.mode === "edit" ? (
                 <p className="text-xs text-muted-foreground">

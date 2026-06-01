@@ -29,8 +29,8 @@ export default async function EditTemplatePage({ params }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-medium">{template.page_type}</h2>
-          <p className="text-sm text-muted-foreground">Edit template · {count ?? 0} pages use it</p>
+          <h2 className="text-h1 font-medium">{template.page_type}</h2>
+          <p className="text-small text-muted-foreground">Edit template · {count ?? 0} pages use it</p>
         </div>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/page-templates">Back</Link>
