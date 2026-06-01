@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   CalendarClock,
   CalendarDays,
+  ListChecks,
   BookOpen,
   Settings,
   Shield,
@@ -41,6 +42,7 @@ const SECTIONS = [
   {
     label: "Planning",
     items: [
+      { title: "Work Queue", href: "/work", icon: ListChecks },
       { title: "Workload", href: "/workload", icon: CalendarClock },
       { title: "Calendar", href: "/calendar", icon: CalendarDays },
     ],
