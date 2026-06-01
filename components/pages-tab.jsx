@@ -294,7 +294,7 @@ export function PagesTab({ dealerId, dealerName, pages, jiraConfigured = false }
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground">
+                <TableCell colSpan={12} className="py-10 text-center text-small text-muted-foreground">
                   No pages match these filters.
                 </TableCell>
               </TableRow>

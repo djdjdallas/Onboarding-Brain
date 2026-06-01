@@ -1,11 +1,8 @@
+import { CalendarClock, AlertTriangle } from "lucide-react"
+
 import { createClient } from "@/lib/supabase/server"
 import { StatusPill } from "@/components/ui/status-pill"
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import {
   Table,
   TableBody,
@@ -35,26 +32,21 @@ export default async function WorkloadPage() {
       </div>
 
       {error ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Couldn&apos;t load workload</CardTitle>
-            <CardDescription>
-              {error.message?.includes("am_workload")
-                ? "The am_workload view is missing — run supabase/migrations/0008_v21_am_workload_view.sql."
-                : error.message}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          icon={AlertTriangle}
+          title="Couldn't load workload"
+          description={
+            error.message?.includes("am_workload")
+              ? "The am_workload view is missing — run supabase/migrations/0008_v21_am_workload_view.sql."
+              : error.message
+          }
+        />
       ) : !rows?.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No scheduled work</CardTitle>
-            <CardDescription>
-              Workload appears once dealers have an assigned AM and pages with due
-              dates.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          icon={CalendarClock}
+          title="No scheduled work"
+          description="Workload appears once dealers have an assigned AM and pages with due dates."
+        />
       ) : (
         <div className="rounded-md border">
           <Table>

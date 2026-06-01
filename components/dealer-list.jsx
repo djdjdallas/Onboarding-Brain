@@ -1,16 +1,10 @@
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, Building2, AlertTriangle } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/server"
 import { DealerTable } from "@/components/dealer-table"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 
 /**
  * Server component: fetches the dealer_dashboard view and renders the table,
@@ -25,37 +19,33 @@ export async function DealerList() {
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Couldn&apos;t load dealers</CardTitle>
-          <CardDescription>
-            {error.message?.includes("dealer_dashboard")
-              ? "The dealer_dashboard view is missing — run supabase/migrations/0002_dealer_dashboard_view.sql."
-              : error.message}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <EmptyState
+        icon={AlertTriangle}
+        title="Couldn't load dealers"
+        description={
+          error.message?.includes("dealer_dashboard")
+            ? "The dealer_dashboard view is missing — run supabase/migrations/0002_dealer_dashboard_view.sql."
+            : error.message
+        }
+      />
     )
   }
 
   if (!dealers?.length) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No dealers yet</CardTitle>
-          <CardDescription>
-            Onboard your first dealer to generate its page plan.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <EmptyState
+        icon={Building2}
+        title="No dealers yet"
+        description="Onboard your first dealer to generate its page plan."
+        action={
           <Button asChild>
             <Link href="/dealers/new">
               <Plus />
               Add Dealer
             </Link>
           </Button>
-        </CardContent>
-      </Card>
+        }
+      />
     )
   }
 

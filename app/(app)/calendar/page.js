@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { format, parseISO } from "date-fns"
+import { CalendarDays } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/server"
 import { pageLabel } from "@/lib/jira-export"
 import { CalendarControls } from "@/components/calendar-controls"
+import { EmptyState } from "@/components/ui/empty-state"
 import { StatusPill, statusVariant } from "@/components/ui/status-pill"
 
 export const metadata = { title: "Calendar · SEO Page Manager" }
@@ -67,10 +69,15 @@ export default async function CalendarPage({ searchParams }) {
       </div>
 
       {days.length === 0 ? (
-        <p className="rounded-md border border-dashed px-3 py-10 text-center text-small text-muted-foreground">
-          Nothing due in {monthLabel}
-          {amId ? " for this AM" : ""}.
-        </p>
+        <EmptyState
+          icon={CalendarDays}
+          title={`Nothing due in ${monthLabel}`}
+          description={
+            amId
+              ? "No scheduled work for this AM this month. Try another month or clear the AM filter."
+              : "No pages are scheduled this month. Try another month."
+          }
+        />
       ) : (
         <div className="space-y-4">
           {days.map((day) => (

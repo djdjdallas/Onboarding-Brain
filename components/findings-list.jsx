@@ -3,7 +3,10 @@ import {
   findingDetail,
   findingUrl,
 } from "@/lib/findings"
+import { CheckCircle2 } from "lucide-react"
+
 import { FindingActions } from "@/components/finding-actions"
+import { EmptyState } from "@/components/ui/empty-state"
 import { StatusPill, statusVariant } from "@/components/ui/status-pill"
 
 /**
@@ -13,9 +16,11 @@ import { StatusPill, statusVariant } from "@/components/ui/status-pill"
 export function FindingsList({ findings }) {
   if (!findings?.length) {
     return (
-      <p className="text-small text-muted-foreground">
-        No findings. Run an audit to check this dealer&apos;s live URLs.
-      </p>
+      <EmptyState
+        icon={CheckCircle2}
+        title="No findings"
+        description="Run an audit to check this dealer's live URLs for broken links, sitemap gaps, and title mismatches."
+      />
     )
   }
 
