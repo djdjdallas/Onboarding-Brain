@@ -18,9 +18,9 @@ export default async function FindingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Audit Findings</h1>
-        <p className="text-muted-foreground">
+      <div className="space-y-1">
+        <h1 className="text-display font-medium tracking-tight">Audit Findings</h1>
+        <p className="text-small text-muted-foreground">
           Issues found across all dealers&apos; live pages.
         </p>
       </div>

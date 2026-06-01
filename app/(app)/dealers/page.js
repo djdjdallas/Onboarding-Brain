@@ -9,8 +9,8 @@ export default function DealersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dealers</h1>
-          <p className="text-muted-foreground">Every dealer you manage.</p>
+          <h1 className="text-display font-medium tracking-tight">Dealers</h1>
+          <p className="text-small text-muted-foreground">Every dealer you manage.</p>
         </div>
         <Button asChild>
           <Link href="/dealers/new">

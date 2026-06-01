@@ -4,7 +4,7 @@ import { format, parseISO } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { pageLabel } from "@/lib/jira-export"
 import { CalendarControls } from "@/components/calendar-controls"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill, statusVariant } from "@/components/ui/status-pill"
 
 export const metadata = { title: "Calendar · SEO Page Manager" }
 
@@ -52,8 +52,8 @@ export default async function CalendarPage({ searchParams }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Calendar</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-display font-medium tracking-tight">Calendar</h1>
+          <p className="text-small text-muted-foreground">
             Everything due across all dealers, by month. {pages.length} item
             {pages.length === 1 ? "" : "s"}.
           </p>
@@ -67,7 +67,7 @@ export default async function CalendarPage({ searchParams }) {
       </div>
 
       {days.length === 0 ? (
-        <p className="rounded-md border border-dashed px-3 py-10 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed px-3 py-10 text-center text-small text-muted-foreground">
           Nothing due in {monthLabel}
           {amId ? " for this AM" : ""}.
         </p>
@@ -75,7 +75,7 @@ export default async function CalendarPage({ searchParams }) {
         <div className="space-y-4">
           {days.map((day) => (
             <div key={day} className="space-y-2">
-              <h3 className="text-sm font-medium">
+              <h3 className="text-small font-medium">
                 {format(parseISO(day), "EEE, MMM d")}{" "}
                 <span className="text-muted-foreground">({byDay[day].length})</span>
               </h3>
@@ -84,7 +84,7 @@ export default async function CalendarPage({ searchParams }) {
                   <Link
                     key={p.id}
                     href={`/dealers/${p.dealer_id}/pages/${p.id}`}
-                    className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                    className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-small hover:bg-accent"
                   >
                     <span className="min-w-0 truncate">
                       <span className="font-medium">{p.dealers?.name}</span>
@@ -93,9 +93,9 @@ export default async function CalendarPage({ searchParams }) {
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
                       {p.dealers?.account_managers?.name ? (
-                        <span className="text-xs text-muted-foreground">{p.dealers.account_managers.name}</span>
+                        <span className="text-tiny text-muted-foreground">{p.dealers.account_managers.name}</span>
                       ) : null}
-                      <Badge variant="outline">{p.next_step ?? p.status}</Badge>
+                      <StatusPill status={statusVariant(p.next_step ?? p.status)} label={p.next_step ?? p.status} />
                     </span>
                   </Link>
                 ))}

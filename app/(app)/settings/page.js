@@ -1,6 +1,6 @@
 import { jiraConfig, isJiraConfigured } from "@/lib/jira"
 import { isLlmConfigured } from "@/lib/llm"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/ui/status-pill"
 import {
   Card,
   CardContent,
@@ -17,21 +17,22 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">App integrations.</p>
+        <h1 className="text-display font-medium tracking-tight">Settings</h1>
+        <p className="text-small text-muted-foreground">App integrations.</p>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <CardTitle className="text-base">Jira</CardTitle>
+            <CardTitle className="text-h2">Jira</CardTitle>
             <CardDescription>
               Push pages + subtasks as issues and sync their status back.
             </CardDescription>
           </div>
-          <Badge variant={configured ? "default" : "outline"}>
-            {configured ? "Connected" : "Not configured"}
-          </Badge>
+          <StatusPill
+            status={configured ? "live" : "backlog"}
+            label={configured ? "Connected" : "Not configured"}
+          />
         </CardHeader>
         <CardContent className="grid gap-1 text-sm">
           {configured ? (
@@ -50,7 +51,7 @@ export default function SettingsPage() {
               </div>
             </>
           ) : (
-            <p className="text-muted-foreground">
+            <p className="text-small text-muted-foreground">
               Set <code>JIRA_BASE_URL</code>, <code>JIRA_EMAIL</code>,{" "}
               <code>JIRA_API_TOKEN</code>, and <code>JIRA_PROJECT_KEY</code> in
               your environment to enable Push to Jira and status sync. Until then,
@@ -63,14 +64,15 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <CardTitle className="text-base">AI content drafting</CardTitle>
+            <CardTitle className="text-h2">AI content drafting</CardTitle>
             <CardDescription>
               Draft first-pass SEO copy per page with Claude (Opus 4.8).
             </CardDescription>
           </div>
-          <Badge variant={llmOn ? "default" : "outline"}>
-            {llmOn ? "Enabled" : "Not configured"}
-          </Badge>
+          <StatusPill
+            status={llmOn ? "live" : "backlog"}
+            label={llmOn ? "Enabled" : "Not configured"}
+          />
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           {llmOn

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/ui/status-pill"
 import {
   Card,
   CardDescription,
@@ -27,8 +27,8 @@ export default async function WorkloadPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Workload</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-display font-medium tracking-tight">Workload</h1>
+        <p className="text-small text-muted-foreground">
           Open, scheduled work per account manager. Date windows are relative to
           today.
         </p>
@@ -75,16 +75,16 @@ export default async function WorkloadPage() {
                   <TableCell className="font-medium">{r.am_name}</TableCell>
                   <TableCell className="text-right">
                     {r.overdue > 0 ? (
-                      <Badge variant="destructive">{r.overdue}</Badge>
+                      <StatusPill status="error" label={String(r.overdue)} className="ml-auto" />
                     ) : (
-                      <span className="text-muted-foreground tabular-nums">0</span>
+                      <span className="font-mono text-muted-foreground/70 tabular-nums">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{r.due_7}</TableCell>
-                  <TableCell className="text-right tabular-nums font-medium">{r.due_30}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{r.builds}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{r.optimizes}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{r.open_total}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{r.due_7}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums font-medium">{r.due_30}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">{r.builds}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">{r.optimizes}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">{r.open_total}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -4,12 +4,11 @@ import { useMemo, useState } from "react"
 
 import {
   FINDING_TYPE_LABELS,
-  STATUS_VARIANT,
   findingDetail,
   findingUrl,
 } from "@/lib/findings"
 import { FindingActions } from "@/components/finding-actions"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill, statusVariant } from "@/components/ui/status-pill"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -108,7 +107,7 @@ export function GlobalFindings({ findings }) {
         >
           Clear
         </Button>
-        <span className="ml-auto text-sm text-muted-foreground">
+        <span className="ml-auto text-small text-muted-foreground">
           {filtered.length} finding{filtered.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -142,7 +141,7 @@ export function GlobalFindings({ findings }) {
                     <TableCell className="text-muted-foreground">{findingDetail(f)}</TableCell>
                     <TableCell className="max-w-56 truncate text-muted-foreground">
                       {url ? (
-                        <a href={url} target="_blank" rel="noreferrer" className="underline">
+                        <a href={url} target="_blank" rel="noreferrer" className="font-mono text-tiny underline">
                           {url}
                         </a>
                       ) : (
@@ -150,7 +149,7 @@ export function GlobalFindings({ findings }) {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANT[f.status] ?? "outline"}>{f.status}</Badge>
+                      <StatusPill status={statusVariant(f.status)} label={f.status} />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end">
