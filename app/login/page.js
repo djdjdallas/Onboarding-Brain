@@ -8,13 +8,6 @@ import { sendMagicLink } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -36,34 +29,40 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-svh items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">SEO Page Manager</CardTitle>
-          <CardDescription>
-            Sign in with your work email. We&apos;ll send you a magic link —
-            no password needed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@agency.com"
-                autoComplete="email"
-                required
-              />
-            </div>
-            <SubmitButton />
-            {state?.success ? (
-              <p className="text-sm text-muted-foreground">{state.success}</p>
-            ) : null}
-          </form>
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-80 space-y-6">
+        <div className="space-y-3 text-center">
+          <span className="mx-auto grid size-[22px] place-items-center rounded-[5px] bg-primary text-[11px] font-medium text-primary-foreground">
+            S
+          </span>
+          <div className="space-y-1">
+            <h1 className="text-h1 font-medium tracking-tight">Welcome back</h1>
+            <p className="text-small text-muted-foreground">
+              Sign in to SEO Page Manager with your work email.
+            </p>
+          </div>
+        </div>
+
+        <form action={formAction} className="space-y-3">
+          <div className="grid gap-1">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@agency.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+          <SubmitButton />
+        </form>
+
+        <p className="text-center text-tiny text-muted-foreground">
+          {state?.success
+            ? state.success
+            : "We'll email you a sign-in link — no password needed."}
+        </p>
+      </div>
     </main>
   )
 }
